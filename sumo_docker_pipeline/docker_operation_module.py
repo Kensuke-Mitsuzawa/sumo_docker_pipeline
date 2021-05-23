@@ -13,13 +13,14 @@ class SumoDockerController(object):
                  container_name_base: str = "sumo-docker",
                  mount_dir_host: str = "mount_dir",
                  mount_dir_container: str = "/mount_dir",
-                 sumo_command: str = "sumo"
-                 ):
+                 sumo_command: str = "sumo",
+                 device_rerouting_threads: int = 4):
         self.image_name = image_name
         self.container_name_base = container_name_base
         self.mount_dir_container = mount_dir_container
         self.mount_dir_host = mount_dir_host
         self.sumo_command = sumo_command
+        self.device_rerouting_threads = device_rerouting_threads
 
         self.client = docker.from_env()
         self.__check_connection()
@@ -33,6 +34,13 @@ class SumoDockerController(object):
         command_message = self.client.containers.run(image=self.image_name,
                                                      command=self.sumo_command, name=c_name, auto_remove=True)
         assert "German Aerospace Center" in command_message.decode('utf-8')
+
+    def get_sumo_version(self) -> str:
+        command_message = self.client.containers.run(image=self.image_name,
+                                                     command=f'{self.sumo_command} -V',
+                                                     name=self.__generate_tmp_container_name(),
+                                                     auto_remove=True)
+        return command_message.decode('utf-8')
 
     @staticmethod
     def extract_output_options(config_file_name: Path) -> Dict[str, ResultFile]:
@@ -97,6 +105,9 @@ class SumoDockerController(object):
         c_name = self.__generate_tmp_container_name()
         path_config_file = Path(self.mount_dir_container).joinpath(target_scenario_name).joinpath(config_file_name)
         job_command = f'{self.sumo_command} -c {path_config_file}'
+        if self.device_rerouting_threads > 0:
+            job_command += f' --device.rerouting.threads {self.device_rerouting_threads}'
+        # end if
         logger.debug(f'executing job with command {job_command}')
 
         path_config_file_host = Path(self.mount_dir_host).joinpath(target_scenario_name).joinpath(config_file_name)

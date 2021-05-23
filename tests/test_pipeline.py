@@ -7,7 +7,6 @@ def test_pipeline(resource_path_root: Path):
     path_sumo_cfg = resource_path_root.joinpath('config_template/grid.sumo.cfg').absolute()
     path_mounted = resource_path_root.joinpath('config_template').absolute()
     pipeline_obj = DockerPipeline(
-        mount_dir_path=path_mounted,
         path_config_file=path_sumo_cfg,
         scenario_name='test-scenario')
     values_target = {
