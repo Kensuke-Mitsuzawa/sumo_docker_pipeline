@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "sumo_docker_pipeline"
+version = "1.0"
+description = "A pipeline to call a traffic simulator: SUMO"
+authors = ["Kensuke Mitsuzawa <kensuke.mit@gmail.com>"]
+maintainers = ["Kensuke Mitsuzawa <kensuke.mit@gmail.com>"]
+license = "BSD"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+docker = "*"
+pandas = "*"
+bs4 = "*"
+lxml = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.3"
+pytest-resource-path = "^1.3.0"
+
+[build-system]
+requires = ["setuptools", "poetry", "poetry_core>=1.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.extras]

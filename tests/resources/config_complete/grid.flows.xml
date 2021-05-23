@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on Tue Sep 25 11:11:29 2018 by Eclipse SUMO duarouter Version 5345f89a38
+-->
+
+<routes>
+
+    <flows>
+
+   <vType vClass="passenger" id="passenger"  tau="0.5" speedDev="0.1" maxSpeed="13.928007948993887" minGap="5.6919666765065715" accel="7.787210506588512" decel="6.308698121178336" latAlignment="center" />
+	
+	<interval begin="0" end="1800">
+		<!-- Group 1 -->		
+		<flow id="AD" from="left1A1" to="right0D0" number="180" type="passenger"/>
+		<flow id="CB" from="right1D1" to="left0A0" number="180" type="passenger"/>
+		<flow id="EL" from="top0A1" to="bottom3D0" number="180" type="passenger"/>
+		<flow id="HI" from="top3D1" to="bottom0A0" number="180" type="passenger"/>
+		<!-- Group 2 -->		
+		<flow id="DA" from="right0D0" to="left1A1" number="120" type="passenger"/>
+		<flow id="BC" from="left0A0" to="right1D1" number="120" type="passenger"/>
+		<flow id="LE" from="bottom3D0" to="top0A1" number="120" type="passenger"/>
+		<flow id="IH" from="bottom0A0" to="top3D1" number="120" type="passenger"/>
+		<!-- Group 3 -->		
+		<flow id="FD" from="top1B1" to="right0D0" number="90" type="passenger"/>
+		<flow id="GB" from="top2C1" to="left0A0" number="90" type="passenger"/>
+		<flow id="JC" from="bottom1B0" to="right1D1" number="90" type="passenger"/>
+		<flow id="KA" from="bottom2C0" to="left1A1" number="90" type="passenger"/>
+		<!-- Group 4 -->		
+		<flow id="FK" from="top1B1" to="bottom3D0" number="60" type="passenger"/>
+		<flow id="GJ" from="top2C1" to="bottom1B0" number="60" type="passenger"/>
+		<flow id="KF" from="bottom2C0" to="top1B1" number="60" type="passenger"/>
+		<flow id="JG" from="bottom1B0" to="top2C1" number="60" type="passenger"/>
+        </interval>
+    </flows>
+
+</routes>

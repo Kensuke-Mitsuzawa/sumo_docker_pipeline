@@ -1,0 +1,122 @@
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+<!-- Junction BOTTOM LEFT LEFT-->
+
+<e1Detector id="left0A0_0" lane="left0A0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="left0A0_1" lane="left0A0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="bottom0A0_1" lane="bottom0A0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="bottom0A0_0" lane="bottom0A0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="B0A0_1" lane="B0A0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="B0A0_0" lane="B0A0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="A1A0_1" lane="A1A0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="A1A0_0" lane="A1A0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+
+<!-- Junction BOTTOM LEFT MIDDLE-->
+
+<e1Detector id="B1B0_0" lane="B1B0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="B1B0_1" lane="B1B0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="C0B0_0" lane="C0B0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="C0B0_1" lane="C0B0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="bottom1B0_0" lane="bottom1B0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="bottom1B0_1" lane="bottom1B0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="A0B0_0" lane="A0B0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="A0B0_1" lane="A0B0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+
+<!-- Junction BOTTOM RIGHT MIDDLE-->
+
+<e1Detector id="C1C0_0" lane="C1C0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="C1C0_1" lane="C1C0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="D0C0_0" lane="D0C0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="D0C0_1" lane="D0C0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="bottom2C0_0" lane="bottom2C0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="bottom2C0_1" lane="bottom2C0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="B0C0_0" lane="B0C0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="B0C0_1" lane="B0C0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+
+<!-- Junction BOTTOM RIGHT RIGHT-->
+
+<e1Detector id="D1D0_0" lane="D1D0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="D1D0_1" lane="D1D0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="right0D0_0" lane="right0D0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="right0D0_1" lane="right0D0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="bottom3D0_0" lane="bottom3D0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="bottom3D0_1" lane="bottom3D0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="C0D0_0" lane="C0D0_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="C0D0_1" lane="C0D0_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+
+<!-- Junction TOP LEFT LEFT-->
+
+<e1Detector id="top0A1_0" lane="top0A1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="top0A1_1" lane="top0A1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="B1A1_0" lane="B1A1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="B1A1_1" lane="B1A1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="A0A1_0" lane="A0A1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="A0A1_1" lane="A0A1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="left1A1_0" lane="left1A1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="left1A1_1" lane="left1A1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+
+<!-- Junction TOP LEFT MIDDLE-->
+
+<e1Detector id="top1B1_0" lane="top1B1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="top1B1_1" lane="top1B1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="C1B1_0" lane="C1B1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="C1B1_1" lane="C1B1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="B0B1_0" lane="B0B1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="B0B1_1" lane="B0B1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="A1B1_0" lane="A1B1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="A1B1_1" lane="A1B1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+
+<!-- Junction TOP RIGHT MIDDLE-->
+
+<e1Detector id="top2C1_0" lane="top2C1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="top2C1_1" lane="top2C1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="D1C1_0" lane="D1C1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="D1C1_1" lane="D1C1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="C0C1_0" lane="C0C1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="C0C1_1" lane="C0C1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="B1C1_0" lane="B1C1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="B1C1_1" lane="B1C1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+
+<!-- Junction TOP RIGHT RIGHT-->
+
+<e1Detector id="top3D1_0" lane="top3D1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="top3D1_1" lane="top3D1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="right1D1_0" lane="right1D1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="right1D1_1" lane="right1D1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="D0D1_0" lane="D0D1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="D0D1_1" lane="D0D1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+<e1Detector id="C1D1_0" lane="C1D1_0" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+<e1Detector id="C1D1_1" lane="C1D1_1" pos="-1" freq="100" file="grid_loop.out.xml" friendlyPos="True"/>
+
+</additional>

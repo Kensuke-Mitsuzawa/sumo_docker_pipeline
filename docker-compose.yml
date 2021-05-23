@@ -1,0 +1,11 @@
+version: '3'
+services:
+  sumo-docker:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ./mount_dir:/mount_dir
+    stdin_open: true
+    tty: true
+    container_name: sumo-docker-dev
