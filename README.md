@@ -54,6 +54,6 @@ The source code is licensed MIT. The website content is licensed CC BY 4.0.
   year = {2021},
   publisher = {GitHub},
   journal = {GitHub repository},
-  howpublished = {\url{}},
+  howpublished = {\url{https://github.com/Kensuke-Mitsuzawa/sumo_docker_pipeline}},
 }
 ```
