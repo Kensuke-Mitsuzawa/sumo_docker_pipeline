@@ -1,3 +1,6 @@
 .idea/
 __pycache__
 mount_dir/
+*pyc
+dist/
+sumo_docker_pipeline-*

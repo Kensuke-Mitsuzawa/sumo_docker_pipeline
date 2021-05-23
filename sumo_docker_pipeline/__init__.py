@@ -1,0 +1,1 @@
+from sumo_docker_pipeline.pipeline import DockerPipeline

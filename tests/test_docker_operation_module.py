@@ -7,10 +7,10 @@ def test_container_init():
 
 
 def test_start_job(resource_path_root: Path):
-    controller = SumoDockerController(mount_dir_host=str(resource_path_root.absolute()))
-    job_result = controller.start_job(target_scenario_name='', config_file_name='grid.sumo.cfg')
+    controller = SumoDockerController(mount_dir_host=resource_path_root)
+    job_result = controller.start_job(config_file_name='grid.sumo.cfg', target_scenario_name='config_complete')
 
 
 if __name__ == '__main__':
     test_container_init()
-    test_start_job(Path('./resources'))
+    test_start_job(Path('resources').absolute())

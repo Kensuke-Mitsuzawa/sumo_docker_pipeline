@@ -62,6 +62,9 @@ class SumoDockerController(object):
                     output_dir_name = config_file_name.parent.joinpath((value_name['value']))
                 # end if
                 for p_obj in output_dir_name.glob('*'):
+                    if p_obj.is_dir():
+                        continue
+                    # enf if
                     r_files_type.append(ResultFile(p_obj))
                 # end for
             # end try

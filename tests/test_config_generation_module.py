@@ -30,13 +30,13 @@ def test_generate_config(resource_path_root: Path):
     # end for
     config_generator.generate_updated_config_file()
     assert path_destination_dir.exists()
-    assert len(list(path_destination_dir.glob('*xml'))) == 4
+    assert len(list(path_destination_dir.glob('*xml'))) == 3
     import shutil
     shutil.rmtree(path_destination_dir)
 
 
-def test_config_object(resource_config_path: Path):
-    path_config: str = str(resource_config_path.joinpath('config_template/grid.flows.xml'))
+def test_config_object(resource_path_root: Path):
+    path_config: str = str(resource_path_root.joinpath('config_template/grid.flows.xml'))
     sub_cfg_object = ConfigFile('grid.flows.xml', 'flow', path_config)
     seq_elem_obj = sub_cfg_object.element_with_wildcard
     values_target = {
