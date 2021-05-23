@@ -98,7 +98,6 @@ values_target = {
 }
 # execution of SUMO in a docker container
 pipeline_obj = DockerPipeline(
-    mount_dir_path=Path('[a directory path to share with a docker container]'),
     path_config_file=Path('[a path to sumo.cfg]'),
     scenario_name='test-scenario')
 result_obj = pipeline_obj.run_simulation(values_target)
