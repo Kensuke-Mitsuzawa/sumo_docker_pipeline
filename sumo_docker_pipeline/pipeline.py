@@ -23,7 +23,7 @@ class DockerPipeline(object):
         if path_mount_working_dir is None:
             self.path_mount_working_dir = Path(mkdtemp()).absolute()
         else:
-            self.path_mount_working_dir = path_mount_working_dir
+            self.path_mount_working_dir = path_mount_working_dir.absolute()
         # end if
 
         path_destination_scenario = Path(self.path_mount_working_dir).joinpath(scenario_name)
@@ -41,12 +41,16 @@ class DockerPipeline(object):
 
     def run_simulation(self,
                        value_template: Dict[str, Dict[str, Any]],
-                       device_rerouting_threads: int = 4) -> SumoResultObjects:
+                       device_rerouting_threads: int = 4,
+                       is_overwrite: bool = False) -> SumoResultObjects:
         """Run SUMO simulation in a docker container.
 
         :param value_template: A multi layer dict object which replaces values in template files.
+        Put blank dict {} if there is no parameter to be replaced.
         :param device_rerouting_threads: --device.rerouting.threads option of SUMO.
         The option makes simulations in multi-thread.
+        :param is_overwrite: True, then the method overwrites outputs from SUMO.
+        False raises Exception if there is a destination directory already. Default False.
         :return:
         """
         logger.info(f'making the new config files')
@@ -55,6 +59,10 @@ class DockerPipeline(object):
                 c.update_values(value_template[c.name_config_file])
             # end if
         # end for
+        if self.path_destination_scenario.exists() and is_overwrite is False:
+            raise Exception(f'{str(self.path_mount_working_dir)} exists already. '
+                            f'Put is_overwrite=True if you want to save the result in the same directory.')
+        # end if
         self.template_generator.generate_updated_config_file()
         logger.info(f'running sumo simulator now...')
         time_stamp_current = datetime.now().timestamp()

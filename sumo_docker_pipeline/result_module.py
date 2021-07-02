@@ -4,7 +4,11 @@ import numpy
 from itertools import groupby
 from pathlib import Path
 from typing import Dict, List, Optional
+
+import numpy as np
 from bs4 import BeautifulSoup
+
+from sumo_docker_pipeline.logger_unit import logger
 
 
 @dataclasses.dataclass
@@ -21,6 +25,15 @@ class MatrixObject(object):
     interval_begins: numpy.ndarray
     interval_end: numpy.ndarray
     value_type: str
+
+    def to_npz(self, path_npz: Path):
+        dict_obj = dataclasses.asdict(self)
+        np.savez(path_npz, **dict_obj)
+
+    @classmethod
+    def from_npz(cls, path_npz: Path) -> "MatrixObject":
+        data = dict(np.load(str(path_npz), allow_pickle=True))
+        return MatrixObject(**data)
 
 
 @dataclasses.dataclass
@@ -52,8 +65,36 @@ class ResultFile(object):
         return list(set(__))
 
     @staticmethod
-    def xml2matrix(root_soup: BeautifulSoup,
+    def matrix_with_autofill(matrix_stack: List[List[float]]) -> numpy.ndarray:
+        """auto-fill a matrix object with nan value if lengths of lists are different.
+
+        :param matrix_stack: 2nd list. [[value]]
+        :return: 2nd ndarray.
+        """
+        max_length = max([len(l) for l in matrix_stack])
+        min_length = min([len(l) for l in matrix_stack])
+        if max_length != min_length:
+            matrix_value = numpy.array(matrix_stack)
+            return matrix_value
+        else:
+            matrix_value = numpy.zeros([len(matrix_stack), max_length])
+            logger.warning('The output file different length of elements. I replaced insufficient values with Nan.'
+                           'Be careful the existence of Nan values.')
+            matrix_value[:] = np.NAN
+            for i, j in enumerate(matrix_stack):
+                matrix_value[i][0:len(j)] = j
+            # end for
+            return matrix_value
+
+    def xml2matrix(self,
+                   root_soup: BeautifulSoup,
                    target_element: str) -> MatrixObject:
+        """generates matrix object with the specified key name.
+
+        :param root_soup: xml object.
+        :param target_element: a name of key which corresponds to values of the matrix.
+        :return: MatrixObject
+        """
         stacks = []
         __time_interval: Optional[float] = None
         for elem in root_soup.find_all('interval'):
@@ -61,8 +102,16 @@ class ResultFile(object):
             time_begin = float(elem.get('begin'))
             time_end = float(elem.get('end'))
 
+            obj_value = elem.get(target_element)
             try:
-                target_value = float(elem.get(target_element))
+                if obj_value == '':
+                    target_value = 0.0
+                elif obj_value is None:
+                    target_value = 0.0
+                else:
+                    target_value = float(elem.get(target_element))
+            except ValueError:
+                raise SystemError(f'unexpected error during parsing values because of {obj_value}')
             except KeyError:
                 keys = elem.attrs.keys()
                 raise KeyError(f'Invalid key name. Available keys are {keys}')
@@ -71,6 +120,8 @@ class ResultFile(object):
         # end for
         seq_detector_id = []
         matrix_stack = []
+        seq_begin = []
+        seq_end = []
         for detector_id, g_obj in groupby(sorted(stacks, key=lambda t: t[0]), key=lambda t: t[0]):
             __ = list(sorted([t for t in g_obj], key=lambda t: t[1]))
             seq_begin = [t[1] for t in __]
@@ -80,10 +131,10 @@ class ResultFile(object):
             matrix_stack.append(seq_value)
         # end for
         detectors = numpy.array(seq_detector_id)
-        matrix_value = numpy.array(matrix_stack)
+
         begin_time_vector = numpy.array(seq_begin)
         end_time_vector = numpy.array(seq_end)
-
+        matrix_value = self.matrix_with_autofill(matrix_stack)
         return MatrixObject(
             matrix=matrix_value,
             detectors=detectors,

@@ -25,7 +25,7 @@ def test_pipeline(resource_path_root: Path):
             }
         }
     }
-    result_obj = pipeline_obj.run_simulation(values_target)
+    result_obj = pipeline_obj.run_simulation(values_target, is_overwrite=True)
     logger.info(result_obj.log_message)
     result_matrix = result_obj.result_files['grid_loop.out.xml'].to_array_objects('flow')
     logger.info(f'result matrix. The mean is {result_matrix.matrix.mean()}')
