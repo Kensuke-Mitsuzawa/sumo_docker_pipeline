@@ -23,7 +23,7 @@ class DockerPipeline(object):
         if path_mount_working_dir is None:
             self.path_mount_working_dir = Path(mkdtemp()).absolute()
         else:
-            self.path_mount_working_dir = path_mount_working_dir
+            self.path_mount_working_dir = path_mount_working_dir.absolute()
         # end if
 
         path_destination_scenario = Path(self.path_mount_working_dir).joinpath(scenario_name)
