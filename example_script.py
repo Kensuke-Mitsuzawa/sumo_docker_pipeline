@@ -6,7 +6,7 @@ import tempfile
 """An example to run SUMO in docker interactively."""
 
 
-def example_iterative():
+def test_example_iterative():
     resource_path_root = Path('tests/resources')
     # a path to sumo.cfg file.
     path_sumo_cfg = resource_path_root.joinpath('config_template/grid.sumo.cfg').absolute()
@@ -53,7 +53,7 @@ def example_iterative():
         shutil.rmtree(path_iter)
     # end for
 
-def example_one_run():
+def test_example_one_run():
     resource_path_root = Path('tests/resources')
     # a path to sumo.cfg file.
     path_sumo_cfg = resource_path_root.joinpath('config_template/grid.sumo.cfg').absolute()
@@ -90,5 +90,6 @@ def example_one_run():
 
 
 if __name__ == '__main__':
-    example_one_run()
-    example_iterative()
+    test_example_one_run()
+    test_example_iterative()
+

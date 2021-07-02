@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2021-07-02 07:40:01 by Eclipse SUMO sumo Version 1.9.1
+<!-- generated on 2021-05-17 14:02:52 by Eclipse SUMO sumo Version 1.9.1
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
-        <net-file value="/mount_dir/config_complete/grid.net.xml"/>
-        <route-files value="/mount_dir/config_complete/grid.flows.xml"/>
-        <additional-files value="/mount_dir/config_complete/grid_detectors.det.xml"/>
+        <net-file value="/mount_dir/grid.net.xml"/>
+        <route-files value="/mount_dir/grid.flows.xml"/>
+        <additional-files value="/mount_dir/grid_detectors.det.xml"/>
     </input>
 
     <output>
-        <output-prefix value="output"/>
+        <output-prefix value="output/test/y99."/>
     </output>
 
     <time>
@@ -27,7 +27,6 @@
         <device.rerouting.probability value="-1"/>
         <device.rerouting.period value="0"/>
         <device.rerouting.pre-period value="60"/>
-        <device.rerouting.threads value="4"/>
     </routing>
 
     <random_number>
@@ -1348,7 +1347,6 @@
     <interval begin="2000.00" end="2047.00" id="B0C0_1" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="D1D0_0" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="D1D0_1" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
-    <interval begin="2000.00" end="2047.00" id="right0D0_0" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="right0D0_1" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="bottom3D0_0" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="bottom3D0_1" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
@@ -1359,7 +1357,6 @@
     <interval begin="2000.00" end="2047.00" id="B1A1_0" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="B1A1_1" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="A0A1_0" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
-    <interval begin="2000.00" end="2047.00" id="A0A1_1" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="left1A1_0" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="left1A1_1" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="top1B1_0" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
@@ -1385,5 +1382,4 @@
     <interval begin="2000.00" end="2047.00" id="D0D1_0" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="D0D1_1" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
     <interval begin="2000.00" end="2047.00" id="C1D1_0" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
-    <interval begin="2000.00" end="2047.00" id="C1D1_1" nVehContrib="0" flow="0.00" occupancy="0.00" speed="-1.00" harmonicMeanSpeed="-1.00" length="-1.00" nVehEntered="0"/>
 </detector>
