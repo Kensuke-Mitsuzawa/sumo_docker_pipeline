@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 
 from sumo_docker_pipeline.logger_unit import logger
 
+
 @dataclasses.dataclass
 class MatrixObject(object):
     """
@@ -24,6 +25,15 @@ class MatrixObject(object):
     interval_begins: numpy.ndarray
     interval_end: numpy.ndarray
     value_type: str
+
+    def to_npz(self, path_npz: Path):
+        dict_obj = dataclasses.asdict(self)
+        np.savez(path_npz, **dict_obj)
+
+    @classmethod
+    def from_npz(cls, path_npz: Path) -> "MatrixObject":
+        data = dict(np.load(str(path_npz), allow_pickle=True))
+        return MatrixObject(**data)
 
 
 @dataclasses.dataclass
