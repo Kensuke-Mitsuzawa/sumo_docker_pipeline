@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sumo_docker_pipeline"
-version = "1.1"
+version = "1.2"
 description = "A pipeline to call a traffic simulator: SUMO"
 authors = ["Kensuke Mitsuzawa <kensuke.mit@gmail.com>"]
 maintainers = ["Kensuke Mitsuzawa <kensuke.mit@gmail.com>"]
