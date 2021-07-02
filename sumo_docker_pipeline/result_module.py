@@ -73,12 +73,12 @@ class ResultFile(object):
         """
         max_length = max([len(l) for l in matrix_stack])
         min_length = min([len(l) for l in matrix_stack])
-        if max_length != min_length:
+        if max_length == min_length:
             matrix_value = numpy.array(matrix_stack)
             return matrix_value
         else:
             matrix_value = numpy.zeros([len(matrix_stack), max_length])
-            logger.warning('The output file different length of elements. I replaced insufficient values with Nan.'
+            logger.warning('The output file different length of elements. I replaced insufficient values with Nan. '
                            'Be careful the existence of Nan values.')
             matrix_value[:] = np.NAN
             for i, j in enumerate(matrix_stack):
@@ -135,6 +135,8 @@ class ResultFile(object):
         begin_time_vector = numpy.array(seq_begin)
         end_time_vector = numpy.array(seq_end)
         matrix_value = self.matrix_with_autofill(matrix_stack)
+        assert len(matrix_value.shape) == 2, f'The method expects 2nd array. But it detects {matrix_value.shape} object. ' \
+                                             f'Check your xml file at {self.path_file}'
         return MatrixObject(
             matrix=matrix_value,
             detectors=detectors,
