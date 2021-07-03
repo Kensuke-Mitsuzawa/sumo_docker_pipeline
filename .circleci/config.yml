@@ -6,6 +6,7 @@ orbs:
   # so you dont have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@1.2
+  win: circleci/windows@2.2.0
 
 jobs:
   linux:
@@ -31,8 +32,24 @@ jobs:
       - run:
           name: Run tests
           command: make test
+  windows:
+    executor:
+      name: win/default
+    steps:
+      - run:
+         command: python -V
+         shell: bash.exe
+      - run:
+          name: install package dependencies
+          command: pip install poetry && make install && pip install pytest pytest-resource-path
+          shell: bash.exe
+      - run:
+          name: Run tests
+          command: make test
+          shell: bash.exe
 
 workflows:
   tests:
     jobs:
       - linux
+      - windows
