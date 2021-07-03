@@ -1,0 +1,38 @@
+version: 2.1
+
+orbs:
+  # The python orb contains a set of prepackaged CircleCI configuration you can use repeatedly in your configuration files
+  # Orb commands and jobs help you with common scripting around a language/tool
+  # so you dont have to copy and paste it everywhere.
+  # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
+  python: circleci/python@1.2
+
+jobs:
+  linux:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Installing OpenSSL
+          command: sudo apt update && sudo apt install OpenSSL
+      - run:
+          name: Updating Pyenv
+          command: cd /opt/circleci/.pyenv/plugins/python-build/../.. && git pull && cd -
+      - run:
+          name: Install Python
+          command: pyenv install miniconda3-4.7.12
+      - run:
+          name: Set Python Version
+          #
+          command: pyenv global miniconda3-4.7.12
+      - run:
+          name: install package dependencies
+          command: pip install poetry && make install && pip install pytest pytest-resource-path
+      - run:
+          name: Run tests
+          command: make test
+
+workflows:
+  tests:
+    jobs:
+      - linux

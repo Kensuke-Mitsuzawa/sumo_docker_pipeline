@@ -7,5 +7,4 @@ install:
 	cd sumo_docker_pipeline-* && pip install -e .
 test:
 	pytest tests
-
-
+	pytest example_script.py

@@ -6,10 +6,12 @@ from datetime import datetime
 from sumo_docker_pipeline.result_module import SumoResultObjects, ResultFile
 from sumo_docker_pipeline.logger_unit import logger
 
+from docker.errors import NotFound
+
 
 class SumoDockerController(object):
     def __init__(self,
-                 image_name: str = "sumo-docker-pipeline_sumo-docker",
+                 image_name: str = "kensukemi/sumo-ubuntu18",
                  container_name_base: str = "sumo-docker",
                  mount_dir_host: str = "mount_dir",
                  mount_dir_container: str = "/mount_dir",
@@ -21,9 +23,12 @@ class SumoDockerController(object):
         self.mount_dir_host = mount_dir_host
         self.sumo_command = sumo_command
         self.device_rerouting_threads = device_rerouting_threads
+        self.is_auto_remove = True
 
         self.client = docker.from_env()
         self.__check_connection()
+        __path_container_mount = self.detect_mount_point()
+        self.mount_dir_container = f'{__path_container_mount}/mount_dir'
 
     def __generate_tmp_container_name(self) -> str:
         c_name = f'{self.container_name_base}-{datetime.now().timestamp()}'
@@ -31,15 +36,52 @@ class SumoDockerController(object):
 
     def __check_connection(self):
         c_name = self.__generate_tmp_container_name()
-        command_message = self.client.containers.run(image=self.image_name,
-                                                     command=self.sumo_command, name=c_name, auto_remove=True)
+        try:
+            command_message = self.client.containers.run(image=self.image_name,
+                                                         command=self.sumo_command, name=c_name,
+                                                         auto_remove=self.is_auto_remove)
+        except docker.errors.NotFound:
+            self.is_auto_remove = False
+            command_message = self.client.containers.run(image=self.image_name,
+                                                         command=self.sumo_command, name=c_name,
+                                                         auto_remove=self.is_auto_remove)
+        # end except
         assert "German Aerospace Center" in command_message.decode('utf-8')
+
+    def detect_mount_point(self):
+        candidate_mount_points = [str(Path(self.mount_dir_container).parent), '/home', '/tmp']
+        for path_candidate in candidate_mount_points:
+            container_name = self.__generate_tmp_container_name()
+            command_message = self.client.containers.run(image=self.image_name,
+                                                         command=f'ls {path_candidate}', name=container_name,
+                                                         auto_remove=self.is_auto_remove,
+                                                         volumes={
+                                                             self.mount_dir_host: {'bind': f'{path_candidate}/mount_dir',
+                                                                                   'mode': 'rw'}})
+            if self.is_auto_remove is False:
+                self.delete_container(container_name)
+            # end if
+            if 'mount_dir' in command_message.decode('utf-8'):
+                return path_candidate
+            # end if
+        # end for
+        raise Exception(f'Failed to mount host-directory into container-directory. '
+                        f'Try to change mount_dir_container argument of init. Current value is {self.mount_dir_container}')
+
+    def delete_container(self, container_name: str):
+        for c in self.client.containers.list(all=True):
+            if c.name == container_name:
+                try:
+                    c.remove()
+                except Exception as e:
+                    logger.warning(f'We failed to remove container = {container_name}. We recommend to remove it manually. '
+                                   f'The reason is {e}')
 
     def get_sumo_version(self) -> str:
         command_message = self.client.containers.run(image=self.image_name,
                                                      command=f'{self.sumo_command} -V',
                                                      name=self.__generate_tmp_container_name(),
-                                                     auto_remove=True)
+                                                     auto_remove=self.is_auto_remove)
         return command_message.decode('utf-8')
 
     @staticmethod
@@ -112,7 +154,7 @@ class SumoDockerController(object):
 
         path_config_file_host = Path(self.mount_dir_host).joinpath(target_scenario_name).joinpath(config_file_name)
         command_message = self.client.containers.run(image=self.image_name,
-                                                     command=job_command, name=c_name, auto_remove=False,
+                                                     command=job_command, name=c_name, auto_remove=self.is_auto_remove,
                                                      volumes={self.mount_dir_host: {'bind': self.mount_dir_container,
                                                                                     'mode': 'rw'}})
         result_file_types = self.extract_output_options(path_config_file_host)
@@ -122,6 +164,9 @@ class SumoDockerController(object):
             result_files=result_file_types,
             path_output_dir=self.__extract_output_dir(path_config_file_host)
         )
+        if self.is_auto_remove is False:
+            self.delete_container(container_name=c_name)
+        # end if
         return res_obj
 
     # ---

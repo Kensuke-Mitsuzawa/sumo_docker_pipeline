@@ -31,13 +31,14 @@ def test_example_iterative():
     }
     seq_mount_dirs = []
     # execution of SUMO in a docker container
-    mount_working_dir = tempfile.mkdtemp()
+    mount_working_dir = Path(tempfile.mkdtemp())
     for i_iter in range(0, 5):
         pipeline_obj = DockerPipeline(
             path_config_file=path_sumo_cfg,
             scenario_name=f'test-scenario-{i_iter}',
             path_mount_working_dir=mount_working_dir)
-        result_obj = pipeline_obj.run_simulation(values_target_base)
+        result_obj = pipeline_obj.run_simulation(values_target_base,
+                                                 is_overwrite=True)
         # Obtain the result from SUMO
         logger.info(result_obj.log_message)
         result_matrix = result_obj.result_files['grid_loop.out.xml'].to_array_objects('flow')
@@ -80,7 +81,7 @@ def test_example_one_run():
     pipeline_obj = DockerPipeline(
         path_config_file=path_sumo_cfg,
         scenario_name='test-scenario')
-    result_obj = pipeline_obj.run_simulation(values_target)
+    result_obj = pipeline_obj.run_simulation(values_target, is_overwrite=True)
     # Obtain the result from SUMO
     logger.info(result_obj.log_message)
     result_matrix = result_obj.result_files['grid_loop.out.xml'].to_array_objects('flow')
