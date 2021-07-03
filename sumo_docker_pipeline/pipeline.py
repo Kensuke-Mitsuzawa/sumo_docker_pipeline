@@ -12,13 +12,15 @@ class DockerPipeline(object):
     def __init__(self,
                  path_config_file: Path,
                  scenario_name: str,
-                 path_mount_working_dir: Optional[Path] = None):
+                 path_mount_working_dir: Optional[Path] = None,
+                 docker_image_name: str = 'kensukemi/sumo-ubuntu18'):
         """A pipeline interface to run SUMO-docker.
 
         :param path_config_file: a path to sumo.cfg file.
         The other config files should be in the same directory (or under the sub-directory)
         :param scenario_name: a name of scenario
         :param path_mount_working_dir: A path to directory where a container mount as the shared directory.
+        :param docker_image_name: A name of docker-image that you call.
         """
         if path_mount_working_dir is None:
             self.path_mount_working_dir = Path(mkdtemp()).absolute()
@@ -35,6 +37,7 @@ class DockerPipeline(object):
         self.template_generator = Template2SuMoConfig(path_config_file=str(path_config_file),
                                                       path_destination_dir=str(path_destination_scenario))
         self.scenario_name = scenario_name
+        self.docker_image_name = docker_image_name
 
     def get_data_directory(self) -> Path:
         return self.path_mount_working_dir
@@ -69,8 +72,8 @@ class DockerPipeline(object):
         sumo_controller = SumoDockerController(
             mount_dir_host=str(self.path_mount_working_dir),
             container_name_base=f'sumo-docker-{self.scenario_name}-{time_stamp_current}',
-            device_rerouting_threads=device_rerouting_threads
-        )
+            device_rerouting_threads=device_rerouting_threads,
+            image_name=self.docker_image_name)
         sumo_result_obj = sumo_controller.start_job(target_scenario_name=self.scenario_name,
                                                     config_file_name=self.template_generator.name_sumo_cfg)
         logger.info(f'done the simulation.')
