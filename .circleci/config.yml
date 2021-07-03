@@ -41,11 +41,14 @@ jobs:
          shell: bash.exe
       - run:
           name: install package dependencies
-          command: pip install poetry && make install && pip install pytest pytest-resource-path
+          command: pip install poetry && poetry install && poetry build --format sdist && tar -xvf dist/*-`poetry version -s`.tar.gz && cd sumo_docker_pipeline-* && pip install -e .
+          shell: bash.exe
+      - run:
+          command: pip install pytest pytest-resource-path
           shell: bash.exe
       - run:
           name: Run tests
-          command: make test
+          command: pytest tests && pytest example_script.py
           shell: bash.exe
 
 workflows:
