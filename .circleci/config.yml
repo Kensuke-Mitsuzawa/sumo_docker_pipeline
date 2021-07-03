@@ -1,10 +1,6 @@
 version: 2.1
 
 orbs:
-  # The python orb contains a set of prepackaged CircleCI configuration you can use repeatedly in your configuration files
-  # Orb commands and jobs help you with common scripting around a language/tool
-  # so you dont have to copy and paste it everywhere.
-  # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@1.2
   win: circleci/windows@2.2.0
 
@@ -32,27 +28,25 @@ jobs:
       - run:
           name: Run tests
           command: make test
-  windows:
-    executor:
-      name: win/default
-    steps:
-      - run:
-         command: python -V
-         shell: bash.exe
-      - run:
-          name: install package dependencies
-          command: pip install poetry && poetry install && poetry build --format sdist && tar -xvf dist/*-`poetry version -s`.tar.gz && cd sumo_docker_pipeline-* && pip install -e .
-          shell: bash.exe
-      - run:
-          command: pip install pytest pytest-resource-path
-          shell: bash.exe
-      - run:
-          name: Run tests
-          command: pytest tests && pytest example_script.py
-          shell: bash.exe
-
+#  windows:
+#    executor:
+#      name: win/default
+#    steps:
+#      - run:
+#         command: python -V
+#         shell: bash.exe
+#      - run:
+#          name: install package dependencies
+#          command: pip install poetry && poetry install && poetry build --format sdist && tar -xvf dist/*-`poetry version -s`.tar.gz && cd sumo_docker_pipeline-* && pip install -e .
+#          shell: bash.exe
+#      - run:
+#          command: pip install pytest pytest-resource-path
+#          shell: bash.exe
+#      - run:
+#          name: Run tests
+#          command: pytest tests && pytest example_script.py
+#          shell: bash.exe
 workflows:
   tests:
     jobs:
       - linux
-      - windows
