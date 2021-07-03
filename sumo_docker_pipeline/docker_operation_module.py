@@ -27,8 +27,7 @@ class SumoDockerController(object):
 
         self.client = docker.from_env()
         self.__check_connection()
-        __path_container_mount = self.detect_mount_point()
-        self.mount_dir_container = f'{__path_container_mount}/mount_dir'
+        self.is_auto_remove = True
 
     def __generate_tmp_container_name(self) -> str:
         c_name = f'{self.container_name_base}-{datetime.now().timestamp()}'
