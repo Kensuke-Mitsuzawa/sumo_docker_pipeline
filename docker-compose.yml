@@ -1,6 +1,7 @@
-version: '3'
+version: '3.5'
 services:
   sumo-docker:
+    image: kensukemi/sumo-ubuntu18
     build:
       context: ./
       dockerfile: Dockerfile

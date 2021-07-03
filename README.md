@@ -23,7 +23,15 @@ SUMO runs in a docker container.
 
 # Install
 
-## build of a docker image with SUMO
+## Pull the image (or build of a docker image with SUMO)
+
+The existing image is on the [Dockerhub](https://hub.docker.com/repository/docker/kensukemi/sumo-ubuntu18).
+
+```shell
+docker pull kensukemi/sumo-ubuntu18
+```
+
+If you prefer to build with yourself, you run the following command.
 
 ```shell
 docker-compose build 
