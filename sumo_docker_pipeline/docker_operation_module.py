@@ -1,7 +1,8 @@
 import docker
 import lxml.etree
+import re
 from typing import Dict, Any
-from pathlib import Path
+from pathlib import Path, WindowsPath
 from datetime import datetime
 from sumo_docker_pipeline.result_module import SumoResultObjects, ResultFile
 from sumo_docker_pipeline.logger_unit import logger
@@ -16,7 +17,8 @@ class SumoDockerController(object):
                  mount_dir_host: str = "mount_dir",
                  mount_dir_container: str = "/mount_dir",
                  sumo_command: str = "sumo",
-                 device_rerouting_threads: int = 4):
+                 device_rerouting_threads: int = 4,
+                 is_rewrite_windows_path: bool = True):
         self.image_name = image_name
         self.container_name_base = container_name_base
         self.mount_dir_container = mount_dir_container
@@ -28,6 +30,7 @@ class SumoDockerController(object):
         self.client = docker.from_env()
         self.__check_connection()
         self.is_auto_remove = True
+        self.is_rewrite_windows_path = is_rewrite_windows_path
 
     def __generate_tmp_container_name(self) -> str:
         c_name = f'{self.container_name_base}-{datetime.now().timestamp()}'
@@ -142,20 +145,51 @@ class SumoDockerController(object):
             'output-prefix element does not exist in config file. Check your config file.'
         return Path(path_config_file).parent.joinpath(output_prefix_element.attrib['value'])
 
+    @staticmethod
+    def rewrite_windows_path(mount_dir_host: str) -> str:
+        """rewrite from Windows style into Unix style.
+        Ex. C:\\Users\\kensu\\AppData\\Local\\Temp\\tmp3t95r_eb -> /c/Users/kensu/AppData/Local/Temp/tmp3t95r_eb
+        """
+        unix_form = Path(mount_dir_host).as_posix()
+        drive_prefix = re.search(r'^[C-D]\:', str(unix_form))
+        if drive_prefix:
+            without_prefix = unix_form[drive_prefix.span()[1]:]
+            replaced_prefix = '/' + unix_form[drive_prefix.span()[0]:drive_prefix.span()[1]].lower().replace(':', '')
+            path_updated = replaced_prefix + without_prefix
+        else:
+            path_updated = str(unix_form)
+        # end if
+        return path_updated
+
     def start_job(self, target_scenario_name: str, config_file_name: str = 'sumo.cfg') -> SumoResultObjects:
         c_name = self.__generate_tmp_container_name()
         path_config_file = Path(self.mount_dir_container).joinpath(target_scenario_name).joinpath(config_file_name)
+        if self.is_rewrite_windows_path and isinstance(path_config_file, WindowsPath):
+            # If windows...Path structure is broken. Fix it manually.
+            path_config_file = path_config_file.as_posix()
+        # end if
         job_command = f'{self.sumo_command} -c {path_config_file}'
         if self.device_rerouting_threads > 0:
             job_command += f' --device.rerouting.threads {self.device_rerouting_threads}'
         # end if
+
+        if self.is_rewrite_windows_path and isinstance(Path('./'), WindowsPath):
+            # from windows style path into Unix style path. Docker does not accept Windows format.
+            logger.info('I replaced a format of source directory in the host side. '
+                        'Check it if there is an unknown issue.')
+            logger.info(f'Before {self.mount_dir_host}')
+            __mount_dir_host = self.rewrite_windows_path(self.mount_dir_host)
+            logger.info(f'After {__mount_dir_host}')
+        else:
+            __mount_dir_host = str(self.mount_dir_host)
+        # end if
         logger.debug(f'executing job with command {job_command}')
 
-        path_config_file_host = Path(self.mount_dir_host).joinpath(target_scenario_name).joinpath(config_file_name)
         command_message = self.client.containers.run(image=self.image_name,
                                                      command=job_command, name=c_name, auto_remove=self.is_auto_remove,
-                                                     volumes={self.mount_dir_host: {'bind': self.mount_dir_container,
-                                                                                    'mode': 'rw'}})
+                                                     volumes={__mount_dir_host: {'bind': self.mount_dir_container,
+                                                                                 'mode': 'rw'}})
+        path_config_file_host = Path(self.mount_dir_host).joinpath(target_scenario_name).joinpath(config_file_name)
         result_file_types = self.extract_output_options(path_config_file_host)
         self.check_output_dir(target_scenario_name, result_file_types)
         res_obj = SumoResultObjects(

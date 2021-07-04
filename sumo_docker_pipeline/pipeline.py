@@ -1,5 +1,5 @@
 from datetime import datetime
-from pathlib import Path
+from pathlib import Path, WindowsPath
 from typing import Dict, Any, Optional
 from tempfile import mkdtemp
 from sumo_docker_pipeline.logger_unit import logger
@@ -13,7 +13,8 @@ class DockerPipeline(object):
                  path_config_file: Path,
                  scenario_name: str,
                  path_mount_working_dir: Optional[Path] = None,
-                 docker_image_name: str = 'kensukemi/sumo-ubuntu18'):
+                 docker_image_name: str = 'kensukemi/sumo-ubuntu18',
+                 is_rewrite_windows_path: bool = True):
         """A pipeline interface to run SUMO-docker.
 
         :param path_config_file: a path to sumo.cfg file.
@@ -21,6 +22,7 @@ class DockerPipeline(object):
         :param scenario_name: a name of scenario
         :param path_mount_working_dir: A path to directory where a container mount as the shared directory.
         :param docker_image_name: A name of docker-image that you call.
+        :param is_rewrite_windows_path:
         """
         if path_mount_working_dir is None:
             self.path_mount_working_dir = Path(mkdtemp()).absolute()
@@ -38,6 +40,7 @@ class DockerPipeline(object):
                                                       path_destination_dir=str(path_destination_scenario))
         self.scenario_name = scenario_name
         self.docker_image_name = docker_image_name
+        self.is_rewrite_windows_path = is_rewrite_windows_path
 
     def get_data_directory(self) -> Path:
         return self.path_mount_working_dir
