@@ -38,13 +38,29 @@ class MatrixObject(object):
 
 @dataclasses.dataclass
 class ResultFile(object):
+    """A handler class that parse output-files of Sumo's output.
+
+    Args:
+        path_file: pathlib.Path object that leads into output file's path.
+        name_file: (optional) file name of the output file.
+        tree_object: (optional) BeautifulSoup object that bs4 parsed the output xml
+
+    Attributes:
+        key_attributes: list object of strings that are available as metric of a matrix.
+
+    Methods:
+        to_array_objects: a method to obtain a matrix object.
+    """
     path_file: Path
     name_file: Optional[str] = None
     tree_object: Optional[BeautifulSoup] = None
     key_attributes: Optional[List[str]] = None
 
+    def __repr__(self):
+        return self.__str__()
+
     def __str__(self):
-        return self.path_file
+        return f'ResultFile class for {self.path_file}'
 
     def __post_init__(self):
         self.name_file = self.path_file.name
@@ -151,14 +167,30 @@ class ResultFile(object):
 
 @dataclasses.dataclass
 class SumoResultObjects(object):
-    log_message: str
+    """A handler class for SUMO's output file(s).
+
+    Args:
+        path_output_dir: A directory where your output xmls exist.
+        log_message: A log message from SUMO.
+        output_file_name: optional if you wanna specify the name of output-xml-file.
+        result_files: Not used.
+
+    Attributes:
+        result_files: a dict object {output-file-name: ResultFile class}
+    """
     path_output_dir: Path
+    log_message: Optional[str] = None
     result_files: Optional[Dict[str, ResultFile]] = None
+    output_file_name: Optional[str] = None
 
     def __post_init__(self):
         assert Path(self.path_output_dir).exists()
-        xml_files = list(Path(self.path_output_dir).glob('*xml'))
-        assert len(xml_files) > 0, f'No output xml found in {self.path_output_dir}'
+        if self.output_file_name is not None:
+            xml_files = [Path(self.path_output_dir).joinpath(self.output_file_name)]
+        else:
+            xml_files = list(Path(self.path_output_dir).glob('*xml'))
+            assert len(xml_files) > 0, f'No output xml found in {self.path_output_dir}'
+        # end if
         self.result_files = {}
         for path_xml in xml_files:
             self.result_files[path_xml.name] = ResultFile(path_xml)
