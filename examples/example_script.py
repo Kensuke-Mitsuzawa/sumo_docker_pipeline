@@ -10,7 +10,7 @@ import tempfile
 
 
 def test_example_iterative():
-    resource_path_root = Path('tests/resources')
+    resource_path_root = Path('../tests/resources')
     # a path to sumo.cfg file.
     path_sumo_cfg = resource_path_root.joinpath('config_template/grid.sumo.cfg').absolute()
     # a path to directory where docker mounts
@@ -35,7 +35,7 @@ def test_example_iterative():
     seq_mount_dirs = []
     # execution of SUMO in a docker container
     mount_working_dir = Path(tempfile.mkdtemp())
-    for i_iter in range(0, 5):
+    for i_iter in range(0, 1):
         pipeline_obj = DockerPipeline(
             path_config_file=path_sumo_cfg,
             scenario_name=f'test-scenario-{i_iter}',
@@ -58,7 +58,7 @@ def test_example_iterative():
     # end for
 
 def test_example_one_run():
-    resource_path_root = Path('tests/resources')
+    resource_path_root = Path('../tests/resources')
     # a path to sumo.cfg file.
     path_sumo_cfg = resource_path_root.joinpath('config_template/grid.sumo.cfg').absolute()
     # a path to directory where docker mounts

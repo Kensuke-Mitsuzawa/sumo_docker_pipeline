@@ -7,5 +7,5 @@ install:
 	cd sumo_docker_pipeline-* && pip install -e .
 test:
 	pytest --workers 3 tests
-	pytest example_script.py
+	cd examples/ && python example_script.py
 	pytest --nbmake examples/
