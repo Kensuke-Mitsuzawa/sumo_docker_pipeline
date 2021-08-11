@@ -6,5 +6,6 @@ install:
 	tar -xvf dist/*-`poetry version -s`.tar.gz
 	cd sumo_docker_pipeline-* && pip install -e .
 test:
-	pytest tests
-	pytest example_script.py
+	pytest --workers 3 tests
+	cd examples/ && python example_script.py
+	pytest --nbmake examples/

@@ -111,8 +111,9 @@ pipeline_obj = DockerPipeline(
 result_obj = pipeline_obj.run_simulation(values_target)
 ```
 
-see `example_script.py` for detail.
+# Example
 
+See `examples` directory.
 
 # For developer
 
