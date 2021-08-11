@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../')
+
 from sumo_docker_pipeline import DockerPipeline
 from sumo_docker_pipeline.logger_unit import logger
 from pathlib import Path
