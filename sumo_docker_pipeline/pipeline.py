@@ -1,14 +1,84 @@
+import typing
+import joblib
 from datetime import datetime
 from pathlib import Path, WindowsPath
 from typing import Dict, Any, Optional
 from tempfile import mkdtemp
 from sumo_docker_pipeline.logger_unit import logger
 from sumo_docker_pipeline.config_generation_module import Template2SuMoConfig
-from sumo_docker_pipeline.docker_operation_module import SumoDockerController
+from sumo_docker_pipeline.operation_module.docker_operation_module import SumoDockerController
+from sumo_docker_pipeline.operation_module.local_operation_module import LocalSumoController
 from sumo_docker_pipeline.result_module import SumoResultObjects
+from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
 
 
-class DockerPipeline(object):
+class BasePipeline(object):
+    def __init__(self,
+                 n_jobs: int = 1):
+        self.n_jobs = n_jobs
+
+    def get_data_directory(self) -> Path:
+        raise NotImplementedError()
+
+    def run_simulation(self,
+                       sumo_configs: typing.List[SumoConfigObject],
+                       is_overwrite: bool = False) -> SumoResultObjects:
+        raise NotImplementedError()
+
+
+class LocalSumoPipeline(BasePipeline):
+    def __init__(self,
+                 is_rewrite_windows_path: bool = True,
+                 path_working_dir: Path = None,
+                 n_jobs: int = 1,
+                 sumo_command: str = '/bin/sumo'):
+        """A pipeline interface to run SUMO-docker.
+
+        Args:
+            path_working_dir: a path to save tmp files.
+            n_jobs: the number of cores.
+        """
+        super(LocalSumoPipeline, self).__init__(n_jobs=n_jobs)
+        self.sumo_command = sumo_command
+
+        if path_working_dir is None:
+            self.path_working_dir = Path('/tmp').joinpath('sumo_docker_pipeline').absolute()
+        else:
+            self.path_working_dir = path_working_dir.absolute()
+        # end if
+
+
+        # todo move Template2SuMoConfig to other module.
+        # self.template_generator = Template2SuMoConfig(path_config_file=str(path_config_file),
+        #                                               path_destination_dir=str(path_destination_scenario))
+        self.is_rewrite_windows_path = is_rewrite_windows_path
+
+    def one_simulation(self, sumo_config_object: SumoConfigObject) -> typing.Tuple[str, SumoResultObjects]:
+        sumo_controller = LocalSumoController(path_sumo_config=sumo_config_object.path_config,
+                                              sumo_command=self.sumo_command)
+        sumo_result_obj = sumo_controller.start_job(config_file_name=sumo_config_object.config_name)
+        return sumo_config_object.scenario_name, sumo_result_obj
+
+    def run_simulation(self,
+                       sumo_configs: typing.List[SumoConfigObject],
+                       is_overwrite: bool = False) -> typing.Dict[str, SumoResultObjects]:
+        """Run SUMO simulation.
+
+        Args:
+            sumo_configs: List of SUMO Config objects.
+            is_overwrite: True, then the method overwrites outputs from SUMO. False raises Exception if there is a destination directory already. Default False.
+
+        Returns: `SumoResultObjects`
+        """
+        logger.info(f'running sumo simulator now...')
+        sumo_result_objects = joblib.Parallel(n_jobs=self.n_jobs)(joblib.delayed(
+            self.one_simulation)(conf) for conf in sumo_configs)
+        logger.info(f'done the simulation.')
+        _ = dict(sumo_result_objects)
+        return _
+
+
+class DockerPipeline(BasePipeline):
     def __init__(self,
                  path_config_file: Path,
                  scenario_name: str,
@@ -17,12 +87,13 @@ class DockerPipeline(object):
                  is_rewrite_windows_path: bool = True):
         """A pipeline interface to run SUMO-docker.
 
-        :param path_config_file: a path to sumo.cfg file.
-        The other config files should be in the same directory (or under the sub-directory)
-        :param scenario_name: a name of scenario
-        :param path_mount_working_dir: A path to directory where a container mount as the shared directory.
-        :param docker_image_name: A name of docker-image that you call.
-        :param is_rewrite_windows_path:
+        Args:
+            path_config_file: a path to sumo.cfg file.
+            The other config files should be in the same directory (or under the sub-directory)
+            scenario_name: a name of scenario
+            path_mount_working_dir: A path to directory where a container mount as the shared directory.
+            docker_image_name: A name of docker-image that you call.
+            is_rewrite_windows_path:
         """
         if path_mount_working_dir is None:
             self.path_mount_working_dir = Path(mkdtemp()).absolute()

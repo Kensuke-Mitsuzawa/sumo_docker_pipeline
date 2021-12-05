@@ -1,4 +1,4 @@
-from sumo_docker_pipeline.docker_operation_module import SumoDockerController
+from sumo_docker_pipeline.operation_module.docker_operation_module import SumoDockerController
 from pathlib import Path
 
 
