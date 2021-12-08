@@ -20,7 +20,7 @@ class TargetAttributeObject(object):
 
 
 @dataclasses.dataclass
-class ConfigFile(object):
+class SubConfigFile(object):
     name_config_file: str
     name_config_element: str
     path_config_file: str
@@ -110,29 +110,31 @@ class ConfigFile(object):
 
 class Template2SuMoConfig(object):
     def __init__(self,
-                 path_config_file: str,
-                 path_destination_dir: str):
+                 path_config_file: Path,
+                 path_destination_dir: Path):
         assert Path(path_config_file).exists()
-        assert Path(path_destination_dir).exists()
+        if not Path(path_destination_dir).exists():
+            path_destination_dir.mkdir()
+        # end if
 
         self.path_config_file = str(pathlib.Path(path_config_file).absolute())
         self.path_config_dir = str(pathlib.Path(path_config_file).parent)
         self.name_sumo_cfg = Path(path_config_file).name
         self.path_destination_dir = path_destination_dir
         # set root and sub config files
-        __sub_config_files = self.extract_input_options(path_config_file)
+        __sub_config_files = self.__extract_input_options(str(path_config_file))
         __sub_config_files.append(self.__set_root_cfg_config_object(self.path_config_file))
         self.config_files = __sub_config_files
 
-    def __set_root_cfg_config_object(self, path_config_file: str) -> ConfigFile:
-        root_cfg_obj = ConfigFile(Path(path_config_file).name, self.name_sumo_cfg, self.path_config_file)
+    def __set_root_cfg_config_object(self, path_config_file: str) -> SubConfigFile:
+        root_cfg_obj = SubConfigFile(Path(path_config_file).name, self.name_sumo_cfg, self.path_config_file)
         with open(self.path_config_file, 'r') as f:
             root_cfg_obj.tree_update = etree.parse(f)
         # end with
         return root_cfg_obj
 
     @staticmethod
-    def update_output_prefix(tree: etree.ElementTree) -> etree.ElementTree:
+    def __update_output_prefix(tree: etree.ElementTree) -> etree.ElementTree:
         """update 'output-prefix' element in the xml."""
         root = tree.getroot()
         output_element = root.find('output')
@@ -149,49 +151,7 @@ class Template2SuMoConfig(object):
         # end if
         return tree
 
-    def get_config_objects(self, is_only_wildcard: bool = False) -> List[ConfigFile]:
-        if is_only_wildcard:
-            return [c for c in self.config_files if c.is_wildcard_element == True]
-        else:
-            return self.config_files
-
-    def generate_updated_config_file(self, updated_config_object: Optional[List[ConfigFile]] = None):
-        """write out config files into a new directory.
-
-        :param updated_config_object:
-        :param prefix_name:
-        :return:
-        """
-        # check the destination directory
-        if not pathlib.Path(self.path_destination_dir).exists():
-            pathlib.Path(self.path_destination_dir).mkdir()
-        if not pathlib.Path(self.path_destination_dir).joinpath('output').exists():
-            pathlib.Path(self.path_destination_dir).joinpath('output').mkdir()
-
-        if updated_config_object is None:
-            updated_config_object = self.config_files
-        # end if
-
-        for config_obj in updated_config_object:
-            if self.name_sumo_cfg == config_obj.name_config_file:
-                # update the path to output where SUMO saves the result.
-                config_obj.tree_update = self.update_output_prefix(config_obj.tree_update)
-            # end if
-
-            new_destination_path: str = str(Path(self.path_destination_dir).
-                                            joinpath(f'{config_obj.name_config_file}'))
-            # end if
-            if config_obj.tree_update is None:
-                config_obj.tree_update = config_obj.tree_original
-            # end if
-            config_obj.write_out_update_tree(new_destination_path)
-        # end for
-
-    def get_config_file_name_list(self) -> List[ConfigFile]:
-        """get list of config files"""
-        return self.config_files
-
-    def extract_input_options(self, config_file_name: str) -> List[ConfigFile]:
+    def __extract_input_options(self, config_file_name: str) -> List[SubConfigFile]:
         """extract path-to-config which is written in sumo.cfg file.
 
         :param config_file_name:
@@ -220,7 +180,70 @@ class Template2SuMoConfig(object):
                     raise Exception(f'config file must be in the same directory level or below level. {path_cfg_file}')
                 # end if
                 __sub_cfg_file: str = str(pathlib.Path(self.path_config_dir).joinpath(path_cfg_file))
-                cfg_files.append(ConfigFile(Path(__sub_cfg_file).name, element_name, __sub_cfg_file))
+                cfg_files.append(SubConfigFile(Path(__sub_cfg_file).name, element_name, __sub_cfg_file))
             # end try
         # end for
         return cfg_files
+
+    def update_configs(self, update_values: Dict[str, Dict[str, Any]]) -> None:
+        """Update `SubConfigFile` with the given values.
+
+        Args:
+            update_values: {"sub config file name": {"xml key": {values}}}
+        Returns: None
+        """
+        d_sub_configs = self.get_config_objects()
+        for file_name in update_values.keys():
+            assert file_name in d_sub_configs, f'{file_name} does not exist in {self.path_config_dir}'
+            d_sub_configs[file_name].update_values(update_values[file_name])
+
+    def generate_updated_config_file(self,
+                                     updated_config_object: Optional[List[SubConfigFile]] = None) -> None:
+        """write out config files into a new directory.
+
+        Args:
+            updated_config_object:
+        Returns:
+
+        """
+        # check the destination directory
+        if not pathlib.Path(self.path_destination_dir).exists():
+            pathlib.Path(self.path_destination_dir).mkdir()
+        if not pathlib.Path(self.path_destination_dir).joinpath('output').exists():
+            pathlib.Path(self.path_destination_dir).joinpath('output').mkdir()
+
+        if updated_config_object is None:
+            updated_config_object = self.config_files
+        # end if
+
+        for config_obj in updated_config_object:
+            if self.name_sumo_cfg == config_obj.name_config_file:
+                # update the path to output where SUMO saves the result.
+                config_obj.tree_update = self.__update_output_prefix(config_obj.tree_update)
+            # end if
+
+            new_destination_path: str = str(Path(self.path_destination_dir).
+                                            joinpath(f'{config_obj.name_config_file}'))
+            # end if
+            if config_obj.tree_update is None:
+                config_obj.tree_update = config_obj.tree_original
+            # end if
+            config_obj.write_out_update_tree(new_destination_path)
+        # end for
+
+    def get_config_file_name_list(self) -> List[SubConfigFile]:
+        """get list of config files"""
+        return self.config_files
+
+    def get_config_objects(self, is_only_wildcard: bool = False) -> Dict[str, SubConfigFile]:
+        """Return `SubConfigFile` objects.
+
+        Args:
+            is_only_wildcard: returns `SubConfigFile` that has wildcards in the configuration.
+
+        Returns: {config_file_name: `SubConfigFile`}
+        """
+        if is_only_wildcard:
+            return {c.name_config_file: c for c in self.config_files if c.is_wildcard_element is True}
+        else:
+            return {c.name_config_file: c for c in self.config_files}

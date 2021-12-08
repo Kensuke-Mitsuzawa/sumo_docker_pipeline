@@ -1,42 +1,53 @@
+import shutil
+import uuid
+
 import docker
 import lxml.etree
 import re
 from typing import Dict, Any
 from pathlib import Path, WindowsPath
 from datetime import datetime
-from sumo_docker_pipeline.result_module import SumoResultObjects, ResultFile
 from sumo_docker_pipeline.logger_unit import logger
+from sumo_docker_pipeline.operation_module.base_operation import BaseController
+from sumo_docker_pipeline import static
+from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
+from sumo_docker_pipeline.commons.result_module import SumoResultObjects, ResultFile
 
 from docker.errors import NotFound
 
 
-class SumoDockerController(object):
+class SumoDockerController(BaseController):
     def __init__(self,
                  image_name: str = "kensukemi/sumo-ubuntu18",
                  container_name_base: str = "sumo-docker",
-                 mount_dir_host: str = "mount_dir",
+                 mount_dir_host: Path = Path(static.PATH_PACKAGE_WORK_DIR).joinpath(static.DIR_NAME_DOCKER_MOUNT),
                  mount_dir_container: str = "/mount_dir",
                  sumo_command: str = "sumo",
-                 device_rerouting_threads: int = 4,
-                 is_rewrite_windows_path: bool = True):
+                 is_rewrite_windows_path: bool = True,
+                 docker_client: docker.DockerClient = None):
+        super(SumoDockerController, self).__init__(
+            sumo_command=sumo_command,
+            is_rewrite_windows_path=is_rewrite_windows_path)
         self.image_name = image_name
         self.container_name_base = container_name_base
         self.mount_dir_container = mount_dir_container
         self.mount_dir_host = mount_dir_host
         self.sumo_command = sumo_command
-        self.device_rerouting_threads = device_rerouting_threads
-        self.is_auto_remove = True
 
-        self.client = docker.from_env()
-        self.__check_connection()
         self.is_auto_remove = True
+        if docker_client is None:
+            self.client = docker.from_env()
+        else:
+            self.client = docker_client
+        # end if
+        self.check_connection()
         self.is_rewrite_windows_path = is_rewrite_windows_path
 
     def __generate_tmp_container_name(self) -> str:
         c_name = f'{self.container_name_base}-{datetime.now().timestamp()}'
         return c_name
 
-    def __check_connection(self):
+    def check_connection(self):
         c_name = self.__generate_tmp_container_name()
         try:
             command_message = self.client.containers.run(image=self.image_name,
@@ -54,12 +65,13 @@ class SumoDockerController(object):
         candidate_mount_points = [str(Path(self.mount_dir_container).parent), '/home', '/tmp']
         for path_candidate in candidate_mount_points:
             container_name = self.__generate_tmp_container_name()
-            command_message = self.client.containers.run(image=self.image_name,
-                                                         command=f'ls {path_candidate}', name=container_name,
-                                                         auto_remove=self.is_auto_remove,
-                                                         volumes={
-                                                             self.mount_dir_host: {'bind': f'{path_candidate}/mount_dir',
-                                                                                   'mode': 'rw'}})
+            command_message = \
+                self.client.containers.run(image=self.image_name,
+                                           command=f'ls {path_candidate}', name=container_name,
+                                           auto_remove=self.is_auto_remove,
+                                           volumes={
+                                               self.mount_dir_host: {'bind': f'{path_candidate}/mount_dir',
+                                                                     'mode': 'rw'}})
             if self.is_auto_remove is False:
                 self.delete_container(container_name)
             # end if
@@ -68,7 +80,8 @@ class SumoDockerController(object):
             # end if
         # end for
         raise Exception(f'Failed to mount host-directory into container-directory. '
-                        f'Try to change mount_dir_container argument of init. Current value is {self.mount_dir_container}')
+                        f'Try to change mount_dir_container argument of init. '
+                        f'Current value is {self.mount_dir_container}')
 
     def delete_container(self, container_name: str):
         for c in self.client.containers.list(all=True):
@@ -76,7 +89,8 @@ class SumoDockerController(object):
                 try:
                     c.remove()
                 except Exception as e:
-                    logger.warning(f'We failed to remove container = {container_name}. We recommend to remove it manually. '
+                    logger.warning(f'We failed to remove container = {container_name}. '
+                                   f'We recommend to remove it manually. '
                                    f'The reason is {e}')
 
     def get_sumo_version(self) -> str:
@@ -90,8 +104,10 @@ class SumoDockerController(object):
     def extract_output_options(config_file_name: Path) -> Dict[str, ResultFile]:
         """List up files in output directory.
 
-        :param config_file_name:
-        :return:
+        Args:
+            config_file_name:
+        Returns:
+            {"type of config": `ResultFile`}
         """
         tree = lxml.etree.parse(config_file_name.open())
         root = tree.getroot()
@@ -135,7 +151,7 @@ class SumoDockerController(object):
         # end for
 
     @staticmethod
-    def __extract_output_dir(path_config_file: Path) -> Path:
+    def extract_output_dir(path_config_file: Path) -> Path:
         with open(path_config_file, 'r') as f:
             tree = lxml.etree.parse(f)
         # end with
@@ -148,7 +164,8 @@ class SumoDockerController(object):
     @staticmethod
     def rewrite_windows_path(mount_dir_host: str) -> str:
         """rewrite from Windows style into Unix style.
-        Ex. C:\\Users\\kensu\\AppData\\Local\\Temp\\tmp3t95r_eb -> /c/Users/kensu/AppData/Local/Temp/tmp3t95r_eb
+        Ex. C:\\Users\\kensu\\AppData\\Local\\Temp\\tmp3t95r_eb
+        -> /c/Users/kensu/AppData/Local/Temp/tmp3t95r_eb
         """
         unix_form = Path(mount_dir_host).as_posix()
         drive_prefix = re.search(r'^[C-D]\:', str(unix_form))
@@ -161,55 +178,54 @@ class SumoDockerController(object):
         # end if
         return path_updated
 
-    def start_job(self, target_scenario_name: str, config_file_name: str = 'sumo.cfg') -> SumoResultObjects:
+    def start_job(self, sumo_config: SumoConfigObject) -> SumoResultObjects:
         c_name = self.__generate_tmp_container_name()
-        path_config_file = Path(self.mount_dir_container).joinpath(target_scenario_name).joinpath(config_file_name)
-        if self.is_rewrite_windows_path and isinstance(path_config_file, WindowsPath):
+        # region copy to tmp directory
+        suffix_uuid = str(uuid.uuid4())
+        shutil.copytree(sumo_config.path_config_dir, self.mount_dir_host.joinpath(suffix_uuid))
+        # endregion
+
+        # region set Path inside container.
+        path_config_file_container = Path(self.mount_dir_container).joinpath(suffix_uuid).\
+            joinpath(sumo_config.config_name)
+        if self.is_rewrite_windows_path and isinstance(path_config_file_container, WindowsPath):
             # If windows...Path structure is broken. Fix it manually.
-            path_config_file = path_config_file.as_posix()
+            path_config_file = path_config_file_container.as_posix()
+        else:
+            path_config_file = path_config_file_container
         # end if
         job_command = f'{self.sumo_command} -c {path_config_file}'
-        if self.device_rerouting_threads > 0:
-            job_command += f' --device.rerouting.threads {self.device_rerouting_threads}'
-        # end if
+        # endregion
 
         if self.is_rewrite_windows_path and isinstance(Path('./'), WindowsPath):
             # from windows style path into Unix style path. Docker does not accept Windows format.
             logger.info('I replaced a format of source directory in the host side. '
                         'Check it if there is an unknown issue.')
             logger.info(f'Before {self.mount_dir_host}')
-            __mount_dir_host = self.rewrite_windows_path(self.mount_dir_host)
-            logger.info(f'After {__mount_dir_host}')
+            mount_dir_host = self.rewrite_windows_path(str(self.mount_dir_host))
+            logger.info(f'After {mount_dir_host}')
         else:
-            __mount_dir_host = str(self.mount_dir_host)
+            mount_dir_host = str(self.mount_dir_host)
         # end if
         logger.debug(f'executing job with command {job_command}')
 
         command_message = self.client.containers.run(image=self.image_name,
-                                                     command=job_command, name=c_name, auto_remove=self.is_auto_remove,
-                                                     volumes={__mount_dir_host: {'bind': self.mount_dir_container,
-                                                                                 'mode': 'rw'}})
-        path_config_file_host = Path(self.mount_dir_host).joinpath(target_scenario_name).joinpath(config_file_name)
+                                                     command=job_command,
+                                                     name=c_name,
+                                                     auto_remove=self.is_auto_remove,
+                                                     volumes={mount_dir_host: {'bind': self.mount_dir_container,
+                                                                               'mode': 'rw'}})
+        path_config_file_host = self.mount_dir_host.joinpath(suffix_uuid).\
+            joinpath(sumo_config.config_name)
         result_file_types = self.extract_output_options(path_config_file_host)
-        self.check_output_dir(target_scenario_name, result_file_types)
         res_obj = SumoResultObjects(
+            id_scenario=sumo_config.scenario_name,
+            sumo_config_obj=sumo_config,
             log_message=command_message.decode('utf-8'),
             result_files=result_file_types,
-            path_output_dir=self.__extract_output_dir(path_config_file_host)
+            path_output_dir=self.extract_output_dir(path_config_file_host)
         )
         if self.is_auto_remove is False:
             self.delete_container(container_name=c_name)
         # end if
         return res_obj
-
-    # ---
-    # methods for async methods
-
-    def async_start_job(self):
-        raise NotImplementedError()
-
-    def async_check_job_status(self):
-        raise NotImplementedError()
-
-    def async_get_job_log(self):
-        raise NotImplementedError()

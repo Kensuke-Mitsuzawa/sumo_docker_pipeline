@@ -81,39 +81,9 @@ With the `sumo_docker_pipeline` package, you can replace the attributes with the
 
 ## 3. running the pipeline
 
-```python
-from sumo_docker_pipeline import DockerPipeline
-from pathlib import Path
-# values to replace the wildcard in the template files.
-values_target = {
-    # a file-name to update
-    'grid.flows.xml': {
-        # a XPath to update
-        '/routes/flows/vType[1]': {
-            # key and value to update
-            'maxSpeed': 15,
-            'minGap': 1.0,
-            'accel': 10,
-            'decel': 5
-        },
-        '/routes/flows/vType[2]': {
-            'maxSpeed': 10,
-            'minGap': 0.5,
-            'accel': 5,
-            'decel': 5
-        }
-    }
-}
-# execution of SUMO in a docker container
-pipeline_obj = DockerPipeline(
-    path_config_file=Path('[a path to sumo.cfg]'),
-    scenario_name='test-scenario')
-result_obj = pipeline_obj.run_simulation(values_target)
-```
-
-# Example
-
 See `examples` directory.
+
+
 
 # For developer
 
