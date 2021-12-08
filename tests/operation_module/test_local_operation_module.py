@@ -1,19 +1,21 @@
 from sumo_docker_pipeline.operation_module.local_operation_module import LocalSumoController
 from pathlib import Path
+from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
+
+PATH_SUMO = '/home/kensuke-mi/.pyenv/versions/miniconda3-4.7.12/bin/sumo'
 
 
 def test_container_init(resource_path_root: Path):
-    controller = LocalSumoController(
-        sumo_command='/home/kensuke-mi/.pyenv/versions/miniconda3-4.7.12/bin/sumo',
-        path_sumo_config=resource_path_root.joinpath('config_complete'))
+    controller = LocalSumoController(sumo_command=PATH_SUMO)
 
 
 def test_start_job(resource_path_root: Path):
-    controller = LocalSumoController(
-        sumo_command='/home/kensuke-mi/.pyenv/versions/miniconda3-4.7.12/bin/sumo',
-        path_sumo_config=resource_path_root.joinpath('config_complete'))
+    controller = LocalSumoController(sumo_command=PATH_SUMO)
     controller.get_sumo_version()
-    job_result = controller.start_job(config_file_name='grid.sumo.cfg', target_scenario_name='config_complete')
+    obj = SumoConfigObject(scenario_name='test',
+                     path_config_dir=resource_path_root.joinpath('config_complete'),
+                     config_name='grid.sumo.cfg')
+    job_result = controller.start_job(obj)
 
 
 if __name__ == '__main__':

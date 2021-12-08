@@ -2,8 +2,9 @@ import lxml.etree
 import re
 from typing import Dict, Any
 from pathlib import Path
-from sumo_docker_pipeline.result_module import SumoResultObjects, ResultFile
 from sumo_docker_pipeline.logger_unit import logger
+from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
+from sumo_docker_pipeline.commons.result_module import SumoResultObjects, ResultFile
 
 
 class BaseController(object):
@@ -106,5 +107,5 @@ class BaseController(object):
         # end if
         return path_updated
 
-    def start_job(self, target_scenario_name: str, config_file_name: str = 'sumo.cfg') -> SumoResultObjects:
+    def start_job(self, path_sumo_config: SumoConfigObject) -> SumoResultObjects:
         raise NotImplementedError()

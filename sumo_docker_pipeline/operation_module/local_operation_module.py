@@ -1,21 +1,29 @@
 from pathlib import Path, WindowsPath
 import subprocess
-from sumo_docker_pipeline.result_module import SumoResultObjects
+import shutil
+from sumo_docker_pipeline import static
 from sumo_docker_pipeline.logger_unit import logger
 from sumo_docker_pipeline.operation_module.base_operation import BaseController
+from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
+from sumo_docker_pipeline.commons.result_module import SumoResultObjects
 
 
 class LocalSumoController(BaseController):
     def __init__(self,
-                 path_sumo_config: Path,
-                 sumo_command: str = "/bin/sumo",
+                 sumo_command: str = None,
                  is_rewrite_windows_path: bool = True):
+        if sumo_command is None:
+            sumo_command = shutil.which('sumo')
+            if sumo_command is None:
+                raise Exception('command `sumo` is NOT found in your system. Check your environment. '
+                                'or, give path to sumo manually. Use the `sumo_command` argument.')
+
         super(LocalSumoController, self).__init__(
             sumo_command=sumo_command,
             is_rewrite_windows_path=is_rewrite_windows_path)
-        assert path_sumo_config.exists()
-        self.path_sumo_config = path_sumo_config
         self.check_connection()
+
+
 
     def check_connection(self):
         sumo_bash_command = [self.sumo_command]
@@ -33,7 +41,7 @@ class LocalSumoController(BaseController):
         assert r_code == 0
         return outs.decode('utf-8')
 
-    def start_job(self, config_file_name: str = 'sumo.cfg', target_scenario_name: str = None) -> SumoResultObjects:
+    def start_job(self, sumo_config: SumoConfigObject) -> SumoResultObjects:
         """Run SUMO on local.
 
         Args:
@@ -42,10 +50,11 @@ class LocalSumoController(BaseController):
 
         Returns: `SumoResultObjects`
         """
-        path_config_file = Path(self.path_sumo_config).joinpath(config_file_name)
-        if self.is_rewrite_windows_path and isinstance(path_config_file, WindowsPath):
+        if self.is_rewrite_windows_path and isinstance(sumo_config.path_config_dir, WindowsPath):
             # If windows...Path structure is broken. Fix it manually.
-            path_config_file = path_config_file.as_posix()
+            path_config_file = sumo_config.path_config_dir.as_posix()
+        else:
+            path_config_file = sumo_config.path_config_dir.joinpath(sumo_config.config_name)
         # end if
         job_command = f'{self.sumo_command} -c {path_config_file}'
         logger.debug(f'executing job with command {job_command}')
@@ -56,11 +65,9 @@ class LocalSumoController(BaseController):
         r_code = pipe_obj.returncode
         assert r_code == 0
 
-        path_config_file_host = Path(self.path_sumo_config).joinpath(config_file_name)
-        # todo delete
-        # result_file_types = self.extract_output_options(path_config_file_host)
-        # self.check_output_dir(target_scenario_name, result_file_types)
         res_obj = SumoResultObjects(
+            id_scenario=sumo_config.scenario_name,
+            sumo_config_obj=sumo_config,
             log_message=outs.decode('utf-8'),
-            path_output_dir=self.extract_output_dir(path_config_file_host))
+            path_output_dir=self.extract_output_dir(sumo_config.path_config_dir.joinpath(sumo_config.config_name)))
         return res_obj
