@@ -1,9 +1,13 @@
 import dataclasses
 
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Type
+
+from sumo_output_parsers.models.matrix import MatrixObject
+from sumo_output_parsers.models.parser import ParserClass
 
 from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
+from sumo_docker_pipeline.logger_unit import logger
 
 
 @dataclasses.dataclass
@@ -41,3 +45,25 @@ class SumoResultObjects(object):
     path_output_dir: Path
     log_message: Optional[str] = None
     result_files: Optional[Dict[str, ResultFile]] = None
+
+    def parse_output(self,
+                     output_file_name: str,
+                     parser_class: Type[ParserClass],
+                     target_element: str):
+        """
+
+        Args:
+            parser_class:
+            target_element:
+
+        Returns:
+
+        """
+        assert output_file_name in self.result_files, f'{output_file_name} does not exits in outputs.'
+        try:
+            parser = parser_class(self.result_files[output_file_name].path_file)
+            matrix_obj = parser.xml2matrix(target_element)
+            return matrix_obj
+        except Exception as e:
+            raise Exception(f'unexpected error. Is your parser correct to the file? your-file: {output_file_name}, '
+                            f'your parser: {parser_class}')

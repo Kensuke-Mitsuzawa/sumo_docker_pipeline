@@ -1,6 +1,8 @@
 import sys
 import typing
 
+import numpy
+
 sys.path.append('../')
 
 from sumo_docker_pipeline import DockerPipeline
@@ -8,6 +10,7 @@ from sumo_docker_pipeline import Template2SuMoConfig
 from sumo_docker_pipeline import SumoConfigObject
 from sumo_docker_pipeline.logger_unit import logger
 from sumo_docker_pipeline.static import PATH_PACKAGE_WORK_DIR
+import sumo_output_parsers
 
 from pathlib import Path
 
@@ -66,23 +69,34 @@ def test_example_iterative():
 
     s_config_files = generate_multiple_simulations(path_sumo_cfg, flow_configs, n_simulation)
 
+    from sumo_output_parsers import LoopDetectorParser, LoopDetectorMatrixObject
     for i_iter in range(0, n_iterations):
-        sumo_configs = [SumoConfigObject(scenario_name=dir_config.name, path_config_dir=dir_config, config_name='grid.sumo.cfg')
+        logger.info(f'running {i_iter} iteration...')
+        sumo_configs = [SumoConfigObject(scenario_name=dir_config.name, path_config_dir=dir_config,
+                                         config_name='grid.sumo.cfg')
                         for dir_config in s_config_files]
         pipeline_obj = DockerPipeline(n_jobs=n_parallel)
         result_objs = pipeline_obj.run_simulation(sumo_configs=sumo_configs)
-        # Obtain the result from SUMO
-        # logger.info(f'result matrix of flow. Mean={result_matrix.matrix.mean()} Var={result_matrix.matrix.var()}')
-        # new_passenger_max_speed = result_matrix.matrix.mean() / 30
-        # new_pickup_max_speed = result_matrix.matrix.mean() / 20
-        # values_target_base['grid.flows.xml']['/routes/flows/vType[1]']['maxSpeed'] = new_passenger_max_speed
-        # values_target_base['grid.flows.xml']['/routes/flows/vType[2]']['maxSpeed'] = new_pickup_max_speed
-        # seq_mount_dirs.append(pipeline_obj.path_destination_scenario)
-    # end for
-    # import shutil
-    # for path_iter in seq_mount_dirs:
-    #     shutil.rmtree(path_iter)
-    # end for
+        # region computing mean flow of simulations
+        stack_mean_flows = []
+        for scenario_name, result_obj in result_objs.items():
+            m_obj: LoopDetectorMatrixObject = result_obj.parse_output('grid_loop.out.xml',
+                                                                      parser_class=LoopDetectorParser,
+                                                                      target_element='flow')
+            mean_flow = m_obj.matrix.mean()
+            stack_mean_flows.append(mean_flow)
+        # end for
+        mean_flow = numpy.mean(stack_mean_flows)
+        # endregion
+
+        # region updating parameters
+        logger.info(f'result matrix of flow. Mean={mean_flow}')
+        new_passenger_max_speed = mean_flow / 10
+        new_pickup_max_speed = mean_flow / 10
+        flow_configs['/routes/flows/vType[1]']['maxSpeed'] = new_passenger_max_speed
+        flow_configs['/routes/flows/vType[2]']['maxSpeed'] = new_pickup_max_speed
+        # endregion
+        s_config_files = generate_multiple_simulations(path_sumo_cfg, flow_configs, n_simulation)
 
 
 if __name__ == '__main__':
