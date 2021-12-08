@@ -1,15 +1,15 @@
-from sumo_docker_pipeline.config_generation_module import Template2SuMoConfig, ConfigFile
+from sumo_docker_pipeline.config_generation_module import Template2SuMoConfig, SubConfigFile
 from pathlib import Path
 
 
 def test_generate_config(resource_path_root: Path):
-    path_source_cfg = str(resource_path_root.joinpath('config_template').joinpath('grid.sumo.cfg').absolute())
+    path_source_cfg = resource_path_root.joinpath('config_template').joinpath('grid.sumo.cfg').absolute()
     path_destination_dir = resource_path_root.joinpath('config_template/generated').absolute()
     if not path_destination_dir.exists():
         path_destination_dir.mkdir()
     # end if
     config_generator = Template2SuMoConfig(path_config_file=path_source_cfg,
-                                           path_destination_dir=str(path_destination_dir))
+                                           path_destination_dir=path_destination_dir)
     assert len(config_generator.config_files) == 4
     values_target = {
         '/routes/flows/vType[1]': {
@@ -25,8 +25,9 @@ def test_generate_config(resource_path_root: Path):
             'decel': 5
         }
     }
-    for c in config_generator.get_config_objects():
-        c.update_values(values_target)
+    d_sub_configs = config_generator.get_config_objects()
+    for file_name in d_sub_configs:
+        d_sub_configs[file_name].update_values(values_target)
     # end for
     config_generator.generate_updated_config_file()
     assert path_destination_dir.exists()
@@ -37,7 +38,7 @@ def test_generate_config(resource_path_root: Path):
 
 def test_config_object(resource_path_root: Path):
     path_config: str = str(resource_path_root.joinpath('config_template/grid.flows.xml'))
-    sub_cfg_object = ConfigFile('grid.flows.xml', 'flow', path_config)
+    sub_cfg_object = SubConfigFile('grid.flows.xml', 'flow', path_config)
     seq_elem_obj = sub_cfg_object.element_with_wildcard
     values_target = {
         'passenger': {
