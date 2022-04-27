@@ -1,3 +1,5 @@
+import typing
+from pathlib import Path
 from ..commons.result_module import SumoResultObjects
 
 SIGNALS = {
@@ -8,7 +10,7 @@ SIGNALS = {
 
 
 class BaseFileHandler(object):
-    def get_job_status(self, job_id: str) -> str:
+    def get_job_status(self, job_id: str) -> typing.Tuple[str, Path]:
         raise NotImplementedError()
 
     def start_job(self, job_id: str):
@@ -17,5 +19,5 @@ class BaseFileHandler(object):
     def end_job(self, job_id: str):
         raise NotImplementedError()
 
-    def save_file(self, job_id: str, sumo_result: SumoResultObjects):
+    def save_file(self, job_id: str, sumo_result: SumoResultObjects) -> Path:
         raise NotImplementedError()

@@ -44,6 +44,9 @@ class BaseController(object):
                 path_copy_directory = path_target
             # end if
 
+            if Path(path_copy_directory).exists():
+                shutil.rmtree(path_copy_directory)
+            # end if
             shutil.copytree(sumo_config.path_config_dir, dst=path_copy_directory)
             logger.debug(f"Copy the config directory to {path_copy_directory}")
             sumo_config.path_config_dir_original = copy.deepcopy(sumo_config.path_config_dir)
