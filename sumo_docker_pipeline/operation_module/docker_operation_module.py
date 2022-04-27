@@ -24,10 +24,15 @@ class SumoDockerController(BaseController):
                  mount_dir_container: str = "/mount_dir",
                  sumo_command: str = "sumo",
                  is_rewrite_windows_path: bool = True,
-                 docker_client: docker.DockerClient = None):
+                 docker_client: docker.DockerClient = None,
+                 is_copy_config_dir: bool = True,
+                 is_compress_result: bool = False):
         super(SumoDockerController, self).__init__(
             sumo_command=sumo_command,
-            is_rewrite_windows_path=is_rewrite_windows_path)
+            is_rewrite_windows_path=is_rewrite_windows_path,
+            is_copy_config_dir=is_copy_config_dir,
+            is_compress_result=is_compress_result
+        )
         self.image_name = image_name
         self.container_name_base = container_name_base
         self.mount_dir_container = mount_dir_container
@@ -218,6 +223,8 @@ class SumoDockerController(BaseController):
         path_config_file_host = self.mount_dir_host.joinpath(suffix_uuid).\
             joinpath(sumo_config.config_name)
         result_file_types = self.extract_output_options(path_config_file_host)
+
+        # todo: I think, compressing here.
         res_obj = SumoResultObjects(
             id_scenario=sumo_config.scenario_name,
             sumo_config_obj=sumo_config,

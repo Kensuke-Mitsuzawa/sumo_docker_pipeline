@@ -1,24 +1,70 @@
 import lxml.etree
 import re
+import copy
+import shutil
 from typing import Dict, Any
 from pathlib import Path
-from sumo_docker_pipeline.logger_unit import logger
-from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
-from sumo_docker_pipeline.commons.result_module import SumoResultObjects, ResultFile
+
+from ..logger_unit import logger
+from ..commons.sumo_config_obj import SumoConfigObject
+from ..commons.result_module import SumoResultObjects, ResultFile
+from .. import static
 
 
 class BaseController(object):
     def __init__(self,
                  sumo_command: str = "sumo",
-                 is_rewrite_windows_path: bool = True):
+                 is_rewrite_windows_path: bool = True,
+                 is_copy_config_dir: bool = True,
+                 is_compress_result: bool = False,
+                 default_archive_format: str = 'bztar'):
         self.sumo_command = sumo_command
         self.is_rewrite_windows_path = is_rewrite_windows_path
+        self.is_copy_config_dir = is_copy_config_dir
+        self.is_compress_result = is_compress_result
+        self.default_archive_format = default_archive_format
 
     def check_connection(self):
         raise NotImplementedError()
 
     def get_sumo_version(self) -> str:
         raise NotImplementedError()
+
+    def copy_config_file(self, sumo_config: SumoConfigObject) -> SumoConfigObject:
+        if self.is_copy_config_dir:
+            path_copy_directory = Path(static.PATH_PACKAGE_WORK_DIR).joinpath(static.SUBDIRECTORY_COPIED).\
+                joinpath(sumo_config.scenario_name)
+            shutil.copytree(sumo_config.path_config_dir, dst=path_copy_directory)
+            logger.debug(f"Copy the config directory to {path_copy_directory}")
+            sumo_config.path_config_dir_original = copy.deepcopy(sumo_config.path_config_dir)
+            sumo_config.path_config_dir = path_copy_directory
+        # pass
+        return sumo_config
+
+    def pack_sumo_result(self, sumo_config: SumoConfigObject, log_output: bytes) -> SumoResultObjects:
+        path_output_dir = self.extract_output_dir(sumo_config.path_config_dir.joinpath(sumo_config.config_name))
+        if self.is_compress_result:
+            path_compressed_file = Path(static.PATH_PACKAGE_WORK_DIR).joinpath(static.SUBDIRECTORY_COMPRESSED).\
+                joinpath(f'{sumo_config.scenario_name}.{self.default_archive_format}')
+            o = shutil.make_archive(base_name=path_compressed_file.as_posix(),
+                                    format=self.default_archive_format,
+                                    root_dir=sumo_config.path_config_dir)
+            shutil.rmtree(sumo_config.path_config_dir)
+            logger.debug(f'The compressed file is at {o}')
+            res_obj = SumoResultObjects(
+                id_scenario=sumo_config.scenario_name,
+                sumo_config_obj=sumo_config,
+                log_message=log_output.decode('utf-8'),
+                path_output_dir=Path(o),
+                is_compressed=True)
+        else:
+            res_obj = SumoResultObjects(
+                id_scenario=sumo_config.scenario_name,
+                sumo_config_obj=sumo_config,
+                log_message=log_output.decode('utf-8'),
+                path_output_dir=path_output_dir)
+
+        return res_obj
 
     @staticmethod
     def extract_output_options(config_file_name: Path) -> Dict[str, ResultFile]:
