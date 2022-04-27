@@ -1,10 +1,10 @@
 from pathlib import Path, WindowsPath
 import subprocess
 import shutil
-from sumo_docker_pipeline.logger_unit import logger
-from sumo_docker_pipeline.operation_module.base_operation import BaseController
-from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
-from sumo_docker_pipeline.commons.result_module import SumoResultObjects
+from sumo_tasks_pipeline.logger_unit import logger
+from sumo_tasks_pipeline.operation_module.base_operation import BaseController
+from sumo_tasks_pipeline.commons.sumo_config_obj import SumoConfigObject
+from sumo_tasks_pipeline.commons.result_module import SumoResultObjects
 
 
 class LocalSumoController(BaseController):

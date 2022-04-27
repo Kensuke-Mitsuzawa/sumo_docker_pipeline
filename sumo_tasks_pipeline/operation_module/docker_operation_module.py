@@ -7,11 +7,11 @@ import re
 from typing import Dict, Any
 from pathlib import Path, WindowsPath
 from datetime import datetime
-from sumo_docker_pipeline.logger_unit import logger
-from sumo_docker_pipeline.operation_module.base_operation import BaseController
-from sumo_docker_pipeline import static
-from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
-from sumo_docker_pipeline.commons.result_module import SumoResultObjects, ResultFile
+from sumo_tasks_pipeline.logger_unit import logger
+from sumo_tasks_pipeline.operation_module.base_operation import BaseController
+from sumo_tasks_pipeline import static
+from sumo_tasks_pipeline.commons.sumo_config_obj import SumoConfigObject
+from sumo_tasks_pipeline.commons.result_module import SumoResultObjects, ResultFile
 
 from docker.errors import NotFound
 

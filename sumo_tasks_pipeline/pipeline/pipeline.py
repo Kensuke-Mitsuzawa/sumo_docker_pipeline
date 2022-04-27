@@ -21,7 +21,7 @@ class BasePipeline(object):
                  n_jobs: int = 1):
         self.n_jobs = n_jobs
         if path_working_dir is None:
-            self.path_working_dir = Path('/tmp').joinpath('sumo_docker_pipeline').absolute()
+            self.path_working_dir = Path('/tmp').joinpath('sumo_tasks_pipeline').absolute()
         else:
             self.path_working_dir = path_working_dir.absolute()
         # end if

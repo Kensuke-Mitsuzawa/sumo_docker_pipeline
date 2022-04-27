@@ -3,7 +3,7 @@ import dataclasses
 from pathlib import Path
 from typing import Dict, Optional, Type
 
-from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
+from sumo_tasks_pipeline.commons.sumo_config_obj import SumoConfigObject
 
 
 @dataclasses.dataclass
