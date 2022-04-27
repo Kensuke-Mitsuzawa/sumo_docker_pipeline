@@ -15,6 +15,7 @@ bs4 = "*"
 lxml = "*"
 joblib = "*"
 sumo-output-parsers = "^0.5"
+google-cloud-storage = "*"
 
 Shapely = { version = "^1.7.0", optional = true }
 pyproj = { version = "^3.0.0", optional = true }
