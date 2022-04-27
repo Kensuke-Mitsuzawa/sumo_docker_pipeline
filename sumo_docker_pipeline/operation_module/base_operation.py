@@ -5,6 +5,8 @@ import shutil
 from typing import Dict, Any
 from pathlib import Path
 
+import typing
+
 from ..logger_unit import logger
 from ..commons.sumo_config_obj import SumoConfigObject
 from ..commons.result_module import SumoResultObjects, ResultFile
@@ -30,16 +32,26 @@ class BaseController(object):
     def get_sumo_version(self) -> str:
         raise NotImplementedError()
 
-    def copy_config_file(self, sumo_config: SumoConfigObject) -> SumoConfigObject:
-        if self.is_copy_config_dir:
-            path_copy_directory = Path(static.PATH_PACKAGE_WORK_DIR).joinpath(static.SUBDIRECTORY_COPIED).\
-                joinpath(sumo_config.scenario_name)
+    def copy_config_file(self,
+                         sumo_config: SumoConfigObject,
+                         path_target: typing.Optional[Path] = None,
+                         is_copy_config_dir: bool = True) -> SumoConfigObject:
+        if is_copy_config_dir:
+            if path_target is None:
+                path_copy_directory = Path(static.PATH_PACKAGE_WORK_DIR).joinpath(static.SUBDIRECTORY_COPIED).\
+                    joinpath(sumo_config.scenario_name)
+            else:
+                path_copy_directory = path_target
+            # end if
+
             shutil.copytree(sumo_config.path_config_dir, dst=path_copy_directory)
             logger.debug(f"Copy the config directory to {path_copy_directory}")
             sumo_config.path_config_dir_original = copy.deepcopy(sumo_config.path_config_dir)
             sumo_config.path_config_dir = path_copy_directory
-        # pass
-        return sumo_config
+            # pass
+            return sumo_config
+        else:
+            return sumo_config
 
     def pack_sumo_result(self, sumo_config: SumoConfigObject, log_output: bytes) -> SumoResultObjects:
         path_output_dir = self.extract_output_dir(sumo_config.path_config_dir.joinpath(sumo_config.config_name))

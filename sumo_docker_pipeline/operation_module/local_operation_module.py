@@ -1,8 +1,6 @@
-import copy
 from pathlib import Path, WindowsPath
 import subprocess
 import shutil
-from sumo_docker_pipeline import static
 from sumo_docker_pipeline.logger_unit import logger
 from sumo_docker_pipeline.operation_module.base_operation import BaseController
 from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
@@ -14,7 +12,8 @@ class LocalSumoController(BaseController):
                  sumo_command: str = None,
                  is_rewrite_windows_path: bool = True,
                  is_copy_config_dir: bool = True,
-                 is_compress_result: bool = False):
+                 is_compress_result: bool = False,
+                 default_archive_format: str = 'bztar'):
         """
 
         Args:
@@ -33,7 +32,8 @@ class LocalSumoController(BaseController):
             sumo_command=sumo_command,
             is_rewrite_windows_path=is_rewrite_windows_path,
             is_copy_config_dir=is_copy_config_dir,
-            is_compress_result=is_compress_result
+            is_compress_result=is_compress_result,
+            default_archive_format=default_archive_format
         )
         self.check_connection()
 
@@ -62,7 +62,7 @@ class LocalSumoController(BaseController):
 
         Returns: `SumoResultObjects`
         """
-        sumo_config = self.copy_config_file(sumo_config)
+        sumo_config = self.copy_config_file(sumo_config, is_copy_config_dir=self.is_copy_config_dir)
         if self.is_rewrite_windows_path and isinstance(sumo_config.path_config_dir, WindowsPath):
             # If windows...Path structure is broken. Fix it manually.
             path_config_file = sumo_config.path_config_dir.as_posix()

@@ -17,7 +17,7 @@ def test_start_job(resource_path_root: Path):
                      path_config_dir=resource_path_root.joinpath('config_complete'),
                      config_name='grid.sumo.cfg')
     job_result = controller.start_job(obj)
-    print
+    assert job_result.exists()
 
 
 if __name__ == '__main__':
