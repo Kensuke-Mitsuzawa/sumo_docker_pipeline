@@ -23,13 +23,18 @@ def test_gcs_filehandler():
     path_temp_out = Path(PATH_PACKAGE_WORK_DIR).joinpath(uuid4().__str__())
     path_temp_out.mkdir()
     gcs_filehandler.save_file('test-job', SumoResultObjects(id_scenario='test-job',
-                                                              sumo_config_obj=sumo_config,
-                                                              path_output_dir=path_temp_out))
+                                                            sumo_config_obj=sumo_config,
+                                                            path_output_dir=path_temp_out))
     status = gcs_filehandler.get_job_status('test-job')
-    assert status == 'started'
+    assert status[0] in ('empty', 'started')
     gcs_filehandler.end_job('test-job')
     status = gcs_filehandler.get_job_status('test-job')
-    assert status == 'finished'
+    assert status[0] == 'finished'
+
+    bucket = gcs_filehandler.storage_client.get_bucket('sumo-docker-pipeline-test')
+    blobs = bucket.list_blobs(prefix='test-job/')
+    for blob in blobs:
+        blob.delete()
 
 
 if __name__ == '__main__':

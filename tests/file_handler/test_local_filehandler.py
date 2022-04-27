@@ -24,10 +24,10 @@ def test_local_filehandler():
                                                               sumo_config_obj=sumo_config,
                                                               path_output_dir=path_temp_out))
     status = local_filehandler.get_job_status('test-job')
-    assert status == 'started'
+    assert status[0] in ('empty', 'started')
     local_filehandler.end_job('test-job')
     status = local_filehandler.get_job_status('test-job')
-    assert status == 'finished'
+    assert status[0] in ('finished', )
 
 
 if __name__ == '__main__':
