@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "sumo_docker_pipeline"
-version = "2.0"
-description = "A pipeline to call a traffic simulator: SUMO"
+name = "sumo-tasks-pipeline"
+version = "3.0"
+description = "Simple Python interface for a traffic simulator: SUMO"
 authors = ["Kensuke Mitsuzawa <kensuke.mit@gmail.com>"]
 maintainers = ["Kensuke Mitsuzawa <kensuke.mit@gmail.com>"]
 license = "MIT"
@@ -14,7 +14,7 @@ pandas = "*"
 bs4 = "*"
 lxml = "*"
 joblib = "*"
-sumo-output-parsers = "^0.5"
+google-cloud-storage = "*"
 
 Shapely = { version = "^1.7.0", optional = true }
 pyproj = { version = "^3.0.0", optional = true }

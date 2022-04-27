@@ -1,18 +1,22 @@
 import typing
 import joblib
+import time
+import collections
+from tqdm import tqdm
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
-from sumo_docker_pipeline.logger_unit import logger
-from sumo_docker_pipeline.operation_module.docker_operation_module import SumoDockerController
-from sumo_docker_pipeline.operation_module.local_operation_module import LocalSumoController
-from sumo_docker_pipeline.commons.result_module import SumoResultObjects
-from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
-import time
+from ..logger_unit import logger
+from ..operation_module.docker_operation_module import SumoDockerController
+from ..operation_module.local_operation_module import LocalSumoController
+from ..commons.result_module import SumoResultObjects
+from ..commons.sumo_config_obj import SumoConfigObject
+from ..file_handler import LocalFileHandler, GcsFileHandler, BaseFileHandler
 
 
 class BasePipeline(object):
     def __init__(self,
+                 file_handler: BaseFileHandler,
                  path_working_dir: typing.Optional[Path] = None,
                  n_jobs: int = 1):
         self.n_jobs = n_jobs
@@ -21,18 +25,32 @@ class BasePipeline(object):
         else:
             self.path_working_dir = path_working_dir.absolute()
         # end if
+        self.file_handler = file_handler
+
+    @staticmethod
+    def check_job_ids(sumo_configs: typing.List[SumoConfigObject]) -> bool:
+        seq_job_id = [conf_obj.job_id for conf_obj in sumo_configs]
+        counts = collections.Counter(seq_job_id)
+        for k, t in counts.items():
+            if t > 1:
+                raise Exception(f'duplication in job_id = {k}')
+        # end for
+        return True
 
     def get_data_directory(self) -> Path:
         raise NotImplementedError()
 
+    def one_simulation(self, sumo_config_object: SumoConfigObject) -> typing.Tuple[str, SumoResultObjects]:
+        raise NotImplementedError()
+
     def run_simulation(self,
-                       sumo_configs: typing.List[SumoConfigObject],
-                       is_overwrite: bool = False) -> SumoResultObjects:
+                       sumo_configs: typing.List[SumoConfigObject]) -> SumoResultObjects:
         raise NotImplementedError()
 
 
 class LocalSumoPipeline(BasePipeline):
     def __init__(self,
+                 file_handler: BaseFileHandler,
                  is_rewrite_windows_path: bool = True,
                  path_working_dir: Path = None,
                  n_jobs: int = 1,
@@ -43,40 +61,53 @@ class LocalSumoPipeline(BasePipeline):
             path_working_dir: a path to save tmp files.
             n_jobs: the number of cores.
         """
-        super(LocalSumoPipeline, self).__init__(path_working_dir=path_working_dir, n_jobs=n_jobs)
+        super(LocalSumoPipeline, self).__init__(path_working_dir=path_working_dir,
+                                                n_jobs=n_jobs,
+                                                file_handler=file_handler)
         self.sumo_command = sumo_command
-
-        # todo move Template2SuMoConfig to other module.
-        # self.template_generator = Template2SuMoConfig(path_config_file=str(path_config_file),
-        #                                               path_destination_dir=str(path_destination_scenario))
         self.is_rewrite_windows_path = is_rewrite_windows_path
 
-    def one_simulation(self, sumo_config_object: SumoConfigObject) -> typing.Tuple[str, SumoResultObjects]:
+    def one_simulation(self, sumo_config_object: SumoConfigObject) -> SumoResultObjects:
+        job_status, path = self.file_handler.get_job_status(job_id=sumo_config_object.job_id)
+        if job_status == 'finished':
+            logger.debug(f'job_id={sumo_config_object.job_id} is already done. Skip it.')
+            result_obj = SumoResultObjects(id_scenario=sumo_config_object.scenario_name,
+                                           sumo_config_obj=sumo_config_object,
+                                           path_output_dir=path)
+            return result_obj
+        # end if
+
         sumo_controller = LocalSumoController(sumo_command=self.sumo_command)
+        self.file_handler.start_job(sumo_config_object.job_id)
         sumo_result_obj = sumo_controller.start_job(sumo_config=sumo_config_object)
-        return sumo_config_object.scenario_name, sumo_result_obj
+        path_out = self.file_handler.save_file(sumo_config_object.job_id, sumo_result=sumo_result_obj)
+        self.file_handler.end_job(sumo_config_object.job_id)
+        result_obj = SumoResultObjects(id_scenario=sumo_config_object.scenario_name,
+                                       sumo_config_obj=sumo_config_object,
+                                       path_output_dir=path_out)
+        return result_obj
 
     def run_simulation(self,
-                       sumo_configs: typing.List[SumoConfigObject],
-                       is_overwrite: bool = False) -> typing.Dict[str, SumoResultObjects]:
+                       sumo_configs: typing.List[SumoConfigObject]
+                       ) -> typing.List[SumoResultObjects]:
         """Run SUMO simulation.
 
         Args:
             sumo_configs: List of SUMO Config objects.
-            is_overwrite: True, then the method overwrites outputs from SUMO. False raises Exception if there is a destination directory already. Default False.
 
         Returns: {scenario-name: `SumoResultObjects`}
         """
+        self.check_job_ids(sumo_configs)
         logger.info(f'running sumo simulator now...')
         sumo_result_objects = joblib.Parallel(n_jobs=self.n_jobs)(joblib.delayed(
-            self.one_simulation)(conf) for conf in sumo_configs)
+            self.one_simulation)(conf) for conf in tqdm(sumo_configs))
         logger.info(f'done the simulation.')
-        _ = dict(sumo_result_objects)
-        return _
+        return sumo_result_objects
 
 
 class DockerPipeline(BasePipeline):
     def __init__(self,
+                 file_handler: BaseFileHandler,
                  path_mount_working_dir: Optional[Path] = None,
                  docker_image_name: str = 'kensukemi/sumo-ubuntu18',
                  is_rewrite_windows_path: bool = True,
@@ -86,7 +117,7 @@ class DockerPipeline(BasePipeline):
         """A pipeline interface to run SUMO-docker.
 
         Args:
-            The other config files should be in the same directory (or under the sub-directory)
+            file_handler:
             path_mount_working_dir: A path to directory where a container mount as the shared directory.
             docker_image_name: A name of docker-image that you call.
             is_rewrite_windows_path: True, then the class updates Path only when your OS is Windows.
@@ -94,7 +125,9 @@ class DockerPipeline(BasePipeline):
             time_interval_future_check: Time interval to check Task status.
             limit_max_wait: Time limit (seconds) to force end process.
         """
-        super(DockerPipeline, self).__init__(path_working_dir=path_mount_working_dir, n_jobs=n_jobs)
+        super(DockerPipeline, self).__init__(file_handler=file_handler,
+                                             path_working_dir=path_mount_working_dir,
+                                             n_jobs=n_jobs)
         self.path_mount_working_dir = self.path_working_dir
         self.docker_image_name = docker_image_name
         self.is_rewrite_windows_path = is_rewrite_windows_path
@@ -105,28 +138,38 @@ class DockerPipeline(BasePipeline):
         return self.path_mount_working_dir
 
     def one_job(self, sumo_config_obj: SumoConfigObject) -> SumoResultObjects:
+        job_status, path = self.file_handler.get_job_status(job_id=sumo_config_obj.job_id)
+        if job_status == 'finished':
+            logger.debug(f'job_id={sumo_config_obj.job_id} is already done. Skip it.')
+            result_obj = SumoResultObjects(id_scenario=sumo_config_obj.scenario_name,
+                                           sumo_config_obj=sumo_config_obj,
+                                           path_output_dir=path)
+            return result_obj
+        # end if
         logger.debug(f'running sumo simulator now...')
-        time_stamp_current = datetime.now().timestamp()
+        time_stamp_current = datetime.utcnow()
+        self.file_handler.start_job(sumo_config_obj.job_id)
         sumo_controller = SumoDockerController(
             container_name_base=f'sumo-docker-{sumo_config_obj.scenario_name}-{time_stamp_current}',
-            image_name=self.docker_image_name,
-        )
+            image_name=self.docker_image_name)
         sumo_result_obj = sumo_controller.start_job(sumo_config=sumo_config_obj)
+        path_out = self.file_handler.save_file(sumo_config_obj.job_id, sumo_result_obj)
         logger.debug(f'done the simulation.')
+        self.file_handler.end_job(sumo_config_obj.job_id)
         return sumo_result_obj
 
     def run_simulation(self,
-                       sumo_configs: typing.List[SumoConfigObject],
-                       is_overwrite: bool = False) -> typing.Dict[str, SumoResultObjects]:
+                       sumo_configs: typing.List[SumoConfigObject]
+                       ) -> typing.List[SumoResultObjects]:
         """Run SUMO simulation in a docker container.
 
         Args:
             sumo_configs: List of SumoConfigObject.
-            is_overwrite: True, then the method overwrites outputs from SUMO.
             False raises Exception if there is a destination directory already. Default False.
         Returns:
             dict {scenario-name: `SumoResultObjects`}
         """
+        self.check_job_ids(sumo_configs)
         logger.info(f'making the new config files')
         from concurrent.futures import ThreadPoolExecutor
         pool = ThreadPoolExecutor(self.n_jobs)
@@ -150,9 +193,10 @@ class DockerPipeline(BasePipeline):
             # end if
         # end while
 
-        d_scenario_name2result = {}
+        d_scenario_name2result = []
         for f_obj in s_future_pool:
             r: SumoResultObjects = f_obj.result()
-            d_scenario_name2result[r.id_scenario] = r
+            d_scenario_name2result.append(r)
         # end for
+
         return d_scenario_name2result

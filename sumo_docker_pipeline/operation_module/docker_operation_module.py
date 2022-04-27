@@ -24,10 +24,17 @@ class SumoDockerController(BaseController):
                  mount_dir_container: str = "/mount_dir",
                  sumo_command: str = "sumo",
                  is_rewrite_windows_path: bool = True,
-                 docker_client: docker.DockerClient = None):
+                 docker_client: docker.DockerClient = None,
+                 is_copy_config_dir: bool = True,
+                 is_compress_result: bool = False,
+                 default_archive_format: str = 'bztar'):
         super(SumoDockerController, self).__init__(
             sumo_command=sumo_command,
-            is_rewrite_windows_path=is_rewrite_windows_path)
+            is_rewrite_windows_path=is_rewrite_windows_path,
+            is_copy_config_dir=is_copy_config_dir,
+            is_compress_result=is_compress_result,
+            default_archive_format=default_archive_format
+        )
         self.image_name = image_name
         self.container_name_base = container_name_base
         self.mount_dir_container = mount_dir_container
@@ -182,12 +189,15 @@ class SumoDockerController(BaseController):
         c_name = self.__generate_tmp_container_name()
         # region copy to tmp directory
         suffix_uuid = str(uuid.uuid4())
-        shutil.copytree(sumo_config.path_config_dir, self.mount_dir_host.joinpath(suffix_uuid))
+        # shutil.copytree(sumo_config.path_config_dir, self.mount_dir_host.joinpath(suffix_uuid))
         # endregion
 
         # region set Path inside container.
-        path_config_file_container = Path(self.mount_dir_container).joinpath(suffix_uuid).\
-            joinpath(sumo_config.config_name)
+        __path_sub_dir = f'{sumo_config.scenario_name}/{suffix_uuid}'
+        path_sumo_config_dir = Path(self.mount_dir_host).joinpath(__path_sub_dir)
+        sumo_config = self.copy_config_file(sumo_config, path_sumo_config_dir)
+
+        path_config_file_container = Path(self.mount_dir_container).joinpath(__path_sub_dir).joinpath(sumo_config.config_name)
         if self.is_rewrite_windows_path and isinstance(path_config_file_container, WindowsPath):
             # If windows...Path structure is broken. Fix it manually.
             path_config_file = path_config_file_container.as_posix()
@@ -215,16 +225,14 @@ class SumoDockerController(BaseController):
                                                      auto_remove=self.is_auto_remove,
                                                      volumes={mount_dir_host: {'bind': self.mount_dir_container,
                                                                                'mode': 'rw'}})
-        path_config_file_host = self.mount_dir_host.joinpath(suffix_uuid).\
-            joinpath(sumo_config.config_name)
-        result_file_types = self.extract_output_options(path_config_file_host)
-        res_obj = SumoResultObjects(
-            id_scenario=sumo_config.scenario_name,
-            sumo_config_obj=sumo_config,
-            log_message=command_message.decode('utf-8'),
-            result_files=result_file_types,
-            path_output_dir=self.extract_output_dir(path_config_file_host)
-        )
+        # path_config_file_host = self.mount_dir_host.joinpath(suffix_uuid).\
+        #     joinpath(sumo_config.config_name)
+        # result_file_types = self.extract_output_options(path_config_file_host)
+
+        res_obj = self.pack_sumo_result(
+            sumo_config=sumo_config,
+            log_output=command_message)
+
         if self.is_auto_remove is False:
             self.delete_container(container_name=c_name)
         # end if
