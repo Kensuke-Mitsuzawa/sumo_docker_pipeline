@@ -37,7 +37,7 @@ jobs:
 #         shell: bash.exe
 #      - run:
 #          name: install package dependencies
-#          command: pip install poetry && poetry install && poetry build --format sdist && tar -xvf dist/*-`poetry version -s`.tar.gz && cd sumo_docker_pipeline-* && pip install -e .
+#          command: pip install poetry && poetry install && poetry build --format sdist && tar -xvf dist/*-`poetry version -s`.tar.gz && cd sumo_tasks_pipeline-* && pip install -e .
 #          shell: bash.exe
 #      - run:
 #          command: pip install pytest pytest-resource-path

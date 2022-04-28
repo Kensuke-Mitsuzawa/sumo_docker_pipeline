@@ -5,11 +5,11 @@ import numpy
 
 sys.path.append('../')
 
-from sumo_docker_pipeline import DockerPipeline
-from sumo_docker_pipeline import Template2SuMoConfig
-from sumo_docker_pipeline import SumoConfigObject
-from sumo_docker_pipeline.logger_unit import logger
-from sumo_docker_pipeline.static import PATH_PACKAGE_WORK_DIR
+from sumo_tasks_pipeline import DockerPipeline
+from sumo_tasks_pipeline import Template2SuMoConfig
+from sumo_tasks_pipeline import SumoConfigObject
+from sumo_tasks_pipeline.logger_unit import logger
+from sumo_tasks_pipeline.static import PATH_PACKAGE_WORK_DIR
 import sumo_output_parsers
 
 from pathlib import Path

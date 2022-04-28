@@ -1,9 +1,9 @@
-from sumo_docker_pipeline.pipeline import DockerPipeline, LocalSumoPipeline
-from sumo_docker_pipeline.file_handler import LocalFileHandler, GcsFileHandler
+from sumo_tasks_pipeline.pipeline import DockerPipeline, LocalSumoPipeline
+from sumo_tasks_pipeline.file_handler import LocalFileHandler, GcsFileHandler
 from pathlib import Path
-from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
-from sumo_docker_pipeline.commons.result_module import SumoResultObjects
-from sumo_docker_pipeline.static import PATH_PACKAGE_WORK_DIR
+from sumo_tasks_pipeline.commons.sumo_config_obj import SumoConfigObject
+from sumo_tasks_pipeline.commons.result_module import SumoResultObjects
+from sumo_tasks_pipeline.static import PATH_PACKAGE_WORK_DIR
 import shutil
 import uuid
 

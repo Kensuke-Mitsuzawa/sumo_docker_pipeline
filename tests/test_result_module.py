@@ -1,6 +1,6 @@
-from sumo_docker_pipeline.commons.result_module import SumoResultObjects
-from sumo_docker_pipeline.commons.result_module import ResultFile
-from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
+from sumo_tasks_pipeline.commons.result_module import SumoResultObjects
+from sumo_tasks_pipeline.commons.result_module import ResultFile
+from sumo_tasks_pipeline.commons.sumo_config_obj import SumoConfigObject
 from pathlib import Path
 
 

@@ -1,6 +1,6 @@
-from sumo_docker_pipeline.operation_module.local_operation_module import LocalSumoController
+from sumo_tasks_pipeline.operation_module.local_operation_module import LocalSumoController
 from pathlib import Path
-from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
+from sumo_tasks_pipeline.commons.sumo_config_obj import SumoConfigObject
 
 PATH_SUMO = '/usr/local/bin/sumo'
 

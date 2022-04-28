@@ -3,18 +3,18 @@
 
 Run SUMO simulators as easy as possible!
 
-The package `sumo-docker-pipeline` enables you to run a traffic simulator [SUMO](https://sumo.dlr.de/docs/index.html) efficiently 
+The package `sumo-tasks-pipeline` enables you to run a traffic simulator [SUMO](https://sumo.dlr.de/docs/index.html) efficiently 
 and to interact with Python easily.
 
 # Example
 
-Just three lines to run a SUMO simulation. 
+Just three lines to run a SUMO simulation.
 
 ```python
-from sumo_docker_pipeline import LocalSumoController, SumoConfigObject
+from sumo_tasks_pipeline import LocalSumoController, SumoConfigObject
 from pathlib import Path
 
-path_config = Path().cwd().parent.joinpath('tests/resources/config_complete')
+path_config = Path().cwd().joinpath('tests/resources/config_complete')
 sumo_controller = LocalSumoController(sumo_command='/usr/local/bin/sumo')
 sumo_config = SumoConfigObject(scenario_name='example', path_config_dir=path_config, config_name='grid.sumo.cfg')
 sumo_result_obj = sumo_controller.start_job(sumo_config)
@@ -71,7 +71,7 @@ The source code is licensed MIT. The website content is licensed CC BY 4.0.
 ```
 @misc{sumo-docker-pipeline,
   author = {Kensuke Mitsuzawa},
-  title = {sumo-docker-pipeline},
+  title = {sumo-tasks-pipeline},
   year = {2021},
   publisher = {GitHub},
   journal = {GitHub repository},

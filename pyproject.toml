@@ -1,11 +1,12 @@
 [tool.poetry]
 name = "sumo-tasks-pipeline"
-version = "3.0"
+version = "3.1"
 description = "Simple Python interface for a traffic simulator: SUMO"
 authors = ["Kensuke Mitsuzawa <kensuke.mit@gmail.com>"]
 maintainers = ["Kensuke Mitsuzawa <kensuke.mit@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/Kensuke-Mitsuzawa/sumo_docker_pipeline"
 
 [tool.poetry.dependencies]
 python = "^3.7"

@@ -1,8 +1,8 @@
 import shutil
 
-from sumo_docker_pipeline.operation_module.docker_operation_module import SumoDockerController
+from sumo_tasks_pipeline.operation_module.docker_operation_module import SumoDockerController
 from pathlib import Path
-from sumo_docker_pipeline.commons.sumo_config_obj import SumoConfigObject
+from sumo_tasks_pipeline.commons.sumo_config_obj import SumoConfigObject
 
 
 def test_container_init():

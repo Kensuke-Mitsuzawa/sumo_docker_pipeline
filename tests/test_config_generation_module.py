@@ -1,4 +1,4 @@
-from sumo_docker_pipeline.config_generation_module import Template2SuMoConfig, SubConfigFile
+from sumo_tasks_pipeline.config_generation_module import Template2SuMoConfig, SubConfigFile
 from pathlib import Path
 
 
